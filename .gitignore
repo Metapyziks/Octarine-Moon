@@ -1,6 +1,7 @@
 download/maps/
 garrysmod/cache/
 garrysmod/maps/*.bsp
+garrysmod/maps/*.ain
 syncsrc/OMMapSync/bin/
 syncsrc/OMMapSync/obj/
 syncsrc/OMCacheSync/bin/
