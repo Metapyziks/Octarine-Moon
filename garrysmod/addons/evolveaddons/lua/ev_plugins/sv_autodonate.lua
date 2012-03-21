@@ -26,14 +26,18 @@ function PLUGIN:UpdateDonators()
 					local info = {}
 					info.TransIDs = { split[ 1 ] }
 					info.Email	  = split[ 2 ]
-					info.SteamID  = split[ 3 ]
 					info.Amount   = tonumber( split[ 4 ] )
+					local ids, ide = string.find( split[ 3 ], "STEAM_[0-5]:[0-9]:[0-9]+" )
 					
-					if( PLUGIN.DonatorInfo[ info.SteamID ] == nil ) then
-						PLUGIN.DonatorInfo[ info.SteamID ] = info
-					else
-						PLUGIN.DonatorInfo[ info.SteamID ].Amount = PLUGIN.DonatorInfo[ info.SteamID ].Amount + info.Amount
-						table.Add( PLUGIN.DonatorInfo[ info.SteamID ].TransIDs, info.TransIDs )
+					if ids ~= nil then
+						info.SteamID  = string.sub( split[ 3 ], ids, ide )
+					
+						if( PLUGIN.DonatorInfo[ info.SteamID ] == nil ) then
+							PLUGIN.DonatorInfo[ info.SteamID ] = info
+						else
+							PLUGIN.DonatorInfo[ info.SteamID ].Amount = PLUGIN.DonatorInfo[ info.SteamID ].Amount + info.Amount
+							table.Add( PLUGIN.DonatorInfo[ info.SteamID ].TransIDs, info.TransIDs )
+						end
 					end
 				end
 			end
