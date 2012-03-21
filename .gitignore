@@ -1,0 +1,16 @@
+download/maps/
+garrysmod/cache/
+garrysmod/maps/*.bsp
+syncsrc/OMMapSync/bin/
+syncsrc/OMMapSync/obj/
+syncsrc/OMCacheSync/bin/
+syncsrc/OMCacheSync/obj/
+*.exe
+*.dll
+*.pdb
+*.manifest
+syncsrc/OMCacheSync.sln.docstates.suo
+syncsrc/OMCacheSync/Thumbs.db
+syncsrc/OMCacheSync.suo
+serverinfo.txt
+removehist.bat
