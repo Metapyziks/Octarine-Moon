@@ -10,4 +10,7 @@ Donators have coloured tags on the forum and in game. Only 2.50GBP for permenant
 Join our forums! http://octarinemoon.co.uk/forum;
 Visit our website! http://octarinemoon.co.uk;
 Donators can roll the dice with !rtd. Will you get a prize or a punishment?;
-Want to keep up to date with server news? Read the blog on our site for the latest.
+Want to keep up to date with server news? Read the blog on our site for the latest.;
+Tired of the current map? Type !rtv in chat to rock the vote!;
+Make sure you enter your SteamID when you donate!;
+Going AFK? Make sure you enter spectator mode (F1 -> settings).
