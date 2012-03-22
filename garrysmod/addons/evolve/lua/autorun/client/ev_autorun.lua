@@ -11,5 +11,6 @@ require( "datastream" )
 
 // Load clientside files
 include( "ev_framework.lua" )
+include( "ev_menu/tab_players_controls.lua" )
 include( "ev_menu/cl_menu.lua" )
 include( "ev_cl_init.lua" )
