@@ -6,11 +6,7 @@ local PLUGIN = {}
 PLUGIN.Title = "Punchometre"
 PLUGIN.Description = "Add a punchometre boost permission."
 PLUGIN.Author = "Metapyziks"
-PLUGIN.ChatCommand = "puncho"
-PLUGIN.Usage = nil
 PLUGIN.Privileges = { "Infinite Punchometre", "Boosted Punchometre" }
-
-evolve:RegisterPlugin( PLUGIN )
 
 if( SERVER ) then
 	
@@ -130,3 +126,5 @@ if( SERVER ) then
 		end
 	end
 end
+
+evolve:RegisterPlugin( PLUGIN )
