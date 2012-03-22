@@ -9,7 +9,6 @@ PLUGIN.Author = "Metapyziks"
 PLUGIN.Privileges = { "Infinite Punchometre", "Boosted Punchometre" }
 
 if( SERVER ) then
-	
 	function PLUGIN:PostGamemodeLoaded()
 		-- Override some TTT functions
 		
@@ -123,6 +122,17 @@ if( SERVER ) then
 
 			  pr.retime = CurTime() + propspec_retime:GetFloat()
 		   end
+		end
+	end
+	
+	local propspec_dmgscale = CreateConVar( "ttt_spec_prop_damage_scale", "0" )
+	
+	function PLUGIN:EntityTakeDamage( ent, inflictor, attacker, amount, dmginfo )
+		if not inflictor or inflictor:IsWorld() or inflictor:IsPlayer() or inflictor:IsWeapon() then return end
+		
+		local ply = inflictor:GetNWEntity( "spec_owner" )
+		if ply and ply:IsValid() then
+			dmginfo:ScaleDamage( propspec_dmgscale:GetFloat() )
 		end
 	end
 end
