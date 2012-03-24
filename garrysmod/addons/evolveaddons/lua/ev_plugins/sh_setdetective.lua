@@ -14,7 +14,7 @@ function PLUGIN:Call( ply, args )
 			if(pl:IsTraitor()) then
 				evolve:notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
 			else if(ply:IsActiveDetective()) then
-				evolve:notify( ply, evolve.colors.blue, pl:Nick() evolve.color.red, "is already a Detective!" )
+				evolve:notify( ply, evolve.colors.blue, pl:Nick(), evolve.color.red, "is already a Detective!" )
 			else
 				pl:SetRole(ROLE_DETECTIVE)
 				if( not pl:HasWeapon( "weapon_ttt_wtester" ) ) then
