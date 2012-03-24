@@ -3,7 +3,7 @@ PLUGIN.Title = "Set Detective"
 PLUGIN.Description = "Promote a player to Detectove."
 PLUGIN.Author = "Lawton27"
 PLUGIN.ChatCommand = "setdetective"
-PLUGIN.Usage = "[players]"
+PLUGIN.Usage = "[players] - (optional)"
 PLUGIN.Privileges = { "Promote To Detective" }
 
 function PLUGIN:Call( ply, args )
@@ -31,9 +31,9 @@ function PLUGIN:Call( ply, args )
 			end
 			-- now we need to pick someone at random
 			if( #firstchoices > 0 ) then -- people who want to be detective exist
-				table.insert(players, table.Random( firstchoices )
+				table.insert(players, table.Random( firstchoices ))
 			elseif( #firstchoices > 0 ) then  -- otherwise pick a second choice
-				table.insert(players, table.Random( secondchoices )
+				table.insert(players, table.Random( secondchoices ))
 			else
 				evolve:notify( ply, evolve.colors.red, "Unable to find suitable player to promote." )
 			end

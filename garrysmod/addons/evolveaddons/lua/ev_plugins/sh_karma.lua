@@ -7,7 +7,7 @@ PLUGIN.Title = "Karma"
 PLUGIN.Description = "Modifies a player's karma."
 PLUGIN.Author = "Metapyziks"
 PLUGIN.ChatCommand = "karma"
-PLUGIN.Usage = nil
+PLUGIN.Usage = "[players], [value]"
 PLUGIN.Privileges = { "Karma" }
 
 function PLUGIN:Call( ply, args )
