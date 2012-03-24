@@ -13,7 +13,7 @@ function PLUGIN:Call( ply, args )
 		for _, pl in ipairs( players ) do
 			if(pl:IsTraitor()) then
 				evolve:notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
-			else if(ply:IsActiveDetective()) then
+			elseif(ply:IsActiveDetective()) then
 				evolve:notify( ply, evolve.colors.blue, pl:Nick(), evolve.color.red, "is already a Detective!" )
 			else
 				pl:SetRole(ROLE_DETECTIVE)
