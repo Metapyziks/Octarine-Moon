@@ -12,13 +12,14 @@ function PLUGIN:Call( ply, args )
 
 		for _, pl in ipairs( players ) do
 			if(pl:IsTraitor()) then
-				evolve:notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
+				evolve:Notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
 			elseif(ply:IsActiveDetective()) then
 				evolve:notify( ply, evolve.colors.blue, pl:Nick(), evolve.color.red, "is already a Detective!" )
 			else
 				pl:SetRole(ROLE_DETECTIVE)
+				SendFullStateUpdate() -- See terrortown/gamemode/traitor_state.lua This sends the new status to all clients
 				if( not pl:HasWeapon( "weapon_ttt_wtester" ) ) then
-					pl:Give( "weapon_ttt_wtester" )
+					pl:Give( "weapon_ttt_wtester" ) -- only gives player scanner if they don't already have one
 				end
 				pl:AddCredits( 1 )
 				evolve:Notify( evolve.colors.blue, ply:Nick(), evolve.colors.white, " has promoted ", evolve.colors.blue, pl:Nick(), evolve.colors.white, " to detective!" )
