@@ -44,7 +44,7 @@ function PLUGIN:Call( ply, args )
 				if(pl:IsTraitor()) then
 					evolve:Notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
 				elseif(pl:IsActiveDetective()) then
-					evolve:notify( ply, evolve.colors.blue, pl:Nick(), evolve.colors.red, "is already a Detective!" )
+					evolve:Notify( ply, evolve.colors.blue, pl:Nick(), evolve.colors.red, "is already a Detective!" )
 				else
 					pl:SetRole(ROLE_DETECTIVE)
 					SendFullStateUpdate() -- See terrortown/gamemode/traitor_state.lua This sends the new status to all clients
