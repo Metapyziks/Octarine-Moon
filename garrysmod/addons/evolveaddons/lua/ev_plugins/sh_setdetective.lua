@@ -32,7 +32,7 @@ function PLUGIN:Call( ply, args )
 			-- now we need to pick someone at random
 			if( #firstchoices > 0 ) then -- people who want to be detective exist
 				table.insert(players, table.Random( firstchoices ))
-			elseif( #firstchoices > 0 ) then  -- otherwise pick a second choice
+			elseif( #secondchoices > 0 ) then  -- otherwise pick a second choice
 				table.insert(players, table.Random( secondchoices ))
 			else
 				evolve:notify( ply, evolve.colors.red, "Unable to find suitable player to promote." )
@@ -40,7 +40,7 @@ function PLUGIN:Call( ply, args )
 		end
 
 		for _, pl in ipairs( players ) do
-			if(pl:IsValid() and pl:IsTerror() and v:Alive()) then
+			if(pl:IsValid() and pl:IsTerror() and pl:Alive()) then
 				if(pl:IsTraitor()) then
 					evolve:Notify( ply, evolve.colors.red, "Cannot use this command on a traitor!" )
 				elseif(pl:IsActiveDetective()) then
