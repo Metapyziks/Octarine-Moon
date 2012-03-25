@@ -20,6 +20,38 @@ if( SERVER ) then
 		local propspec_min = CreateConVar("ttt_spec_prop_maxpenalty", "-6")
 		local propspec_max = CreateConVar("ttt_spec_prop_maxbonus", "16")
 		
+		local model_blacklist = 
+		{
+			"models/props_c17/oildrum001_explosive.mdl"
+		}
+		
+		local function IsWhitelistedClass(cls)
+			return (string.match(cls, "prop_physics*") or
+				string.match(cls, "func_physbox*") )
+		end
+		
+		local function IsBlacklistedModel(mdl)
+			return not ( mdl == nil ) and table.HasValue( model_blacklist, mdl )
+		end
+
+		function PROPSPEC.Target(ply, ent)
+			if not propspec_toggle:GetBool() then return end
+			if (not IsValid(ply)) or (not ply:IsSpec()) or (not IsValid(ent)) then return end
+
+			if IsValid(ent:GetNWEntity("spec_owner", nil)) then return end
+
+			local phys = ent:GetPhysicsObject()
+
+			if ent:GetName() != "" and (not GAMEMODE.propspec_allow_named) then return end
+			if (not ValidEntity(phys)) or (not phys:IsMoveable()) then return end
+
+			-- normally only specific whitelisted ent classes can be possessed, but
+			-- custom ents can mark themselves possessable as well
+			if not ent.AllowPropspec and (not IsWhitelistedClass(ent:GetClass()) or IsBlacklistedModel(ent:GetModel())) then return end
+
+			PROPSPEC.Start(ply, ent)
+		end
+		
 		function PROPSPEC.Start(ply, ent)
 			ply:Spectate(OBS_MODE_CHASE)
 			ply:SpectateEntity(ent)
@@ -43,7 +75,7 @@ if( SERVER ) then
 		
 		local propspec_force = CreateConVar("ttt_spec_prop_force", "110")
 		local propspec_boosted_force = CreateConVar("ttt_spec_prop_boosted_force", "110")
-
+		
 		function PROPSPEC.Key(ply, key)
 			local ent = ply.propspec.ent
 			local phys = IsValid(ent) and ent:GetPhysicsObject()
@@ -52,7 +84,7 @@ if( SERVER ) then
 				return false
 			end
 
-			if not phys:IsMoveable() or ent:GetModel() == "models/props_c17/oildrum001_explosive" then
+			if not phys:IsMoveable() then
 				PROPSPEC.End(ply)
 				return true
 			elseif phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
