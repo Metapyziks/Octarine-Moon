@@ -33,7 +33,7 @@ function PLUGIN:Call( ply, args )
 			elseif( #secondchoices > 0 ) then  -- otherwise pick a second choice
 				table.insert(players, table.Random( secondchoices ))
 			else
-				evolve:notify( ply, evolve.colors.red, "Unable to find suitable player to promote." )
+				evolve:Notify( ply, evolve.colors.red, "Unable to find suitable player to promote." )
 			end
 		end
 
