@@ -35,17 +35,19 @@ SWEP.Primary.Delay          = 1.5
 SWEP.Primary.Recoil         = 3
 SWEP.Primary.Automatic = true
 SWEP.Primary.Cone = 0.0
-SWEP.Primary.ClipSize = 2
-SWEP.Primary.ClipMax = 2 -- keep mirrored to ammo
-SWEP.Primary.DefaultClip = 2
+SWEP.Primary.ClipSize = 1
+SWEP.Primary.ClipMax = 1 -- keep mirrored to ammo
+SWEP.Primary.DefaultClip = 1
+
+SWEP.StoredAmmo = 1
 
 SWEP.AutoSpawnable      = true
-SWEP.Primary.Ammo 		= "AR2AltFire"
+SWEP.Primary.Ammo 		= "XBowBolt"
 SWEP.ViewModel          = Model("models/weapons/v_crossbow.mdl")
 SWEP.WorldModel         = Model("models/weapons/w_crossbow.mdl")
 
 SWEP.ViewModelFlip = false
-SWEP.ViewModelFOV = 60
+SWEP.ViewModelFOV = 50
 
 SWEP.Primary.Sound = Sound( "weapons/usp/usp1.wav" )
 SWEP.Primary.SoundLevel = 50
@@ -133,11 +135,23 @@ function SWEP:OnRemove()
 	end
 end
 
+function SWEP:Deploy()
+	if self.Weapon:Clip1() == 0 then
+		self:SendWeaponAnim( ACT_VM_DRAW_EMPTY ) -- this doesn't work :(
+	else
+		self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
+	end
+	return true
+end
+
 function SWEP:PrimaryAttack()
 	self.Weapon:SetNextSecondaryFire( CurTime() + self.Primary.Delay )
 	self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
 
 	if not self:CanPrimaryAttack() then return end
+	
+	self.Weapon:SendWeaponAnim( self.PrimaryAnim )
+	self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
 	if not worldsnd then
 		self.Weapon:EmitSound( self.Primary.Sound, self.Primary.SoundLevel )
@@ -159,11 +173,15 @@ function SWEP:PrimaryAttack()
 				target = trace.Entity
 				if( target:IsPlayer()) then
 					self:PoisonPlayer( target, 120 )
-				elseif( target:GetClass() == "ttt_health_station" ) then
-					target:Poison( self )
+				else
+					if( target:GetClass() == "ttt_health_station" ) then
+						target:Poison( self )
+					end
+					self:SpawnDart( trace )
 				end
+			else
+				self:SpawnDart( trace )
 			end
-			self:SpawnDart( trace )
 			return { damage = false, effects = false }
 		end
 	end
@@ -176,18 +194,19 @@ function SWEP:PrimaryAttack()
 	if not ValidEntity(owner) or owner:IsNPC() or (not owner.ViewPunch) then return end
 
 	owner:ViewPunch( Angle( math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) *self.Primary.Recoil, 0 ) )
+
+	self:Reload()
 end
 
 function SWEP:SpawnDart( trace )
 	local dart = ents.Create( "ttt_dart" )
 	local vec = self.Owner:GetAimVector()
-	dart:SetPos( trace.HitPos - vec * 12 )
-	dart:SetAngles( vec:Angle() )
+	dart:SetPos( trace.HitPos - vec * 4 )
+	local ang = vec:Angle()
+	dart:SetAngles( Angle( ang.r, ang.y + 90, ang.p ) )
+	dart.CanRetrieve = true
 	if trace.HitNonWorld and IsValid( trace.Entity ) then
 		dart:SetParent( trace.Entity )
-		if trace.Entity:IsPlayer() then
-			dart.CanRetrieve = false
-		end
 	end
 	dart:SetOwner( self.Owner )
 	dart.fingerprints = { self.Owner }
