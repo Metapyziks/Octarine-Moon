@@ -80,6 +80,11 @@ function PLUGIN:PlayerDisconnected( ply )
 	for _, pl in ipairs( evolve:FindPlayer( "@", nil, true, true ) ) do
 		evolve:Notify( pl, evolve.colors.blue, ply:Nick(), evolve.colors.white, "'s Steam ID is ", evolve.colors.red, ply:SteamID() )
 	end
+	
+	-- If this person was detective then we need a new detective
+	if(ply:IsActiveDetective() and GetRoundState() == ROUND_ACTIVE)then
+		PromotePlayerToDetective(FindRandomPlayerSuitableForDetective())
+	end
 end
 
 timer.Create( "EV_PlayTimeSave", 60, 0, function()
