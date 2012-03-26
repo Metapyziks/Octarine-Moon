@@ -26,6 +26,13 @@ if( SERVER ) then
 		end
 	end
 	concommand.Add( "ttt_detective_tag", recieveDetectiveRecommendation )
+	
+	local function clearTags()
+		for _, ply in ipairs( player.GetAll() ) do
+			ply:SetNWString( "DetectiveTag", "sb_tag_none" )
+		end
+	end
+	hook.Add( "TTTPrepareRound", "TTTPrepareRound_ClearTags", clearTags )
 end
 if( CLIENT ) then
 	function OverrideScoreboard()
