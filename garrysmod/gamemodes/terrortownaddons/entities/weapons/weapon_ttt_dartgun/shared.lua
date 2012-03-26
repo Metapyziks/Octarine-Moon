@@ -1,22 +1,22 @@
 
 if SERVER then
-   AddCSLuaFile( "shared.lua" )
-   resource.AddFile("materials/vgui/ttt/icon_dart.vmt")
+	AddCSLuaFile( "shared.lua" )
+	resource.AddFile("materials/vgui/ttt/icon_dart.vmt")
 end
 
 SWEP.HoldType           = "crossbow"
 
 if CLIENT then
-   SWEP.PrintName          = "Poison Dartgun"
+	SWEP.PrintName          = "Poison Dartgun"
 
-   SWEP.Slot               = 7
+	SWEP.Slot               = 7
 
-   SWEP.Icon = "vgui/ttt/icon_dart"
-   
-   SWEP.EquipMenuData = {
-      type = "Weapon",
-      desc = "Silent dartgun that\nslowly kills the target\nover time."
-   };
+	SWEP.Icon = "vgui/ttt/icon_dart"
+
+	SWEP.EquipMenuData = {
+		type = "Weapon",
+		desc = "Silent dartgun that\nslowly kills the target\nover time."
+	};
 end
 
 
@@ -56,15 +56,15 @@ SWEP.IronSightsPos      = Vector( 5, -15, -2 )
 SWEP.IronSightsAng      = Vector( 2.6, 1.37, 3.5 )
 
 function SWEP:SetZoom(state)
-    if CLIENT then 
-       return
-    else
-       if state then
-          self.Owner:SetFOV(20, 0.3)
-       else
-          self.Owner:SetFOV(0, 0.2)
-       end
-    end
+	if CLIENT then 
+		return
+	else
+		if state then
+			self.Owner:SetFOV(20, 0.3)
+		else
+			self.Owner:SetFOV(0, 0.2)
+		end
+	end
 end
 
 function SWEP:PoisonPlayer( ply, duration )
@@ -153,9 +153,9 @@ function SWEP:PrimaryAttack()
 	bullet.Tracer = 0
 	bullet.Force  = 0
 	bullet.Damage = 0
-	if SERVER or (CLIENT and IsFirstTimePredicted()) then
+	if SERVER then
 		bullet.Callback = function(att, trace, dmginfo)
-			if trace.HitNonWorld and SERVER then
+			if trace.HitNonWorld then
 				target = trace.Entity
 				if( target:IsPlayer()) then
 					self:PoisonPlayer( target, 120 )
@@ -163,6 +163,7 @@ function SWEP:PrimaryAttack()
 					target:Poison( self )
 				end
 			end
+			self:SpawnDart( trace )
 			return { damage = false, effects = false }
 		end
 	end
@@ -177,6 +178,22 @@ function SWEP:PrimaryAttack()
 	owner:ViewPunch( Angle( math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) *self.Primary.Recoil, 0 ) )
 end
 
+function SWEP:SpawnDart( trace )
+	local dart = ents.Create( "ttt_dart" )
+	local vec = self.Owner:GetAimVector()
+	dart:SetPos( trace.HitPos - vec * 12 )
+	dart:SetAngles( vec:Angle() )
+	if trace.HitNonWorld and IsValid( trace.Entity ) then
+		dart:SetParent( trace.Entity )
+		if trace.Entity:IsPlayer() then
+			dart.CanRetrieve = false
+		end
+	end
+	dart:SetOwner( self.Owner )
+	dart.fingerprints = { self.Owner }
+	dart:Spawn()
+end
+
 -- Add some zoom to ironsights for this gun
 function SWEP:SecondaryAttack()
     if not self.IronSightsPos then return end
@@ -187,9 +204,9 @@ function SWEP:SecondaryAttack()
     self:SetIronsights( bIronsights )
     
     if SERVER then
-        self:SetZoom(bIronsights)
-     else
-        self:EmitSound(self.Secondary.Sound)
+		self:SetZoom(bIronsights)
+    else
+		self:EmitSound(self.Secondary.Sound)
     end
     
     self.Weapon:SetNextSecondaryFire( CurTime() + 0.3)
@@ -216,54 +233,53 @@ function SWEP:Holster()
 end
 
 if CLIENT then
-   local scope = surface.GetTextureID("sprites/scope")
-   function SWEP:DrawHUD()
-      if self:GetIronsights() then
-         surface.SetDrawColor( 0, 0, 0, 255 )
-         
-         local x = ScrW() / 2.0
-         local y = ScrH() / 2.0
-         local scope_size = ScrH()
+	local scope = surface.GetTextureID("sprites/scope")
+	function SWEP:DrawHUD()
+		if self:GetIronsights() then
+			surface.SetDrawColor( 0, 0, 0, 255 )
 
-         -- crosshair
-         local gap = 80
-         local length = scope_size
-         surface.DrawLine( x - length, y, x - gap, y )
-         surface.DrawLine( x + length, y, x + gap, y )
-         surface.DrawLine( x, y - length, x, y - gap )
-         surface.DrawLine( x, y + length, x, y + gap )
+			local x = ScrW() / 2.0
+			local y = ScrH() / 2.0
+			local scope_size = ScrH()
 
-         gap = 0
-         length = 50
-         surface.DrawLine( x - length, y, x - gap, y )
-         surface.DrawLine( x + length, y, x + gap, y )
-         surface.DrawLine( x, y - length, x, y - gap )
-         surface.DrawLine( x, y + length, x, y + gap )
+			-- crosshair
+			local gap = 80
+			local length = scope_size
+			surface.DrawLine( x - length, y, x - gap, y )
+			surface.DrawLine( x + length, y, x + gap, y )
+			surface.DrawLine( x, y - length, x, y - gap )
+			surface.DrawLine( x, y + length, x, y + gap )
+
+			gap = 0
+			length = 50
+			surface.DrawLine( x - length, y, x - gap, y )
+			surface.DrawLine( x + length, y, x + gap, y )
+			surface.DrawLine( x, y - length, x, y - gap )
+			surface.DrawLine( x, y + length, x, y + gap )
 
 
-         -- cover edges
-         local sh = scope_size / 2
-         local w = (x - sh) + 2
-         surface.DrawRect(0, 0, w, scope_size)
-         surface.DrawRect(x + sh - 2, 0, w, scope_size)
+			-- cover edges
+			local sh = scope_size / 2
+			local w = (x - sh) + 2
+			surface.DrawRect(0, 0, w, scope_size)
+			surface.DrawRect(x + sh - 2, 0, w, scope_size)
 
-         surface.SetDrawColor(255, 0, 0, 255)
-         surface.DrawLine(x, y, x + 1, y + 1)
+			surface.SetDrawColor(255, 0, 0, 255)
+			surface.DrawLine(x, y, x + 1, y + 1)
 
-         -- scope
-         surface.SetTexture(scope)
-         surface.SetDrawColor(255, 255, 255, 255)
+			-- scope
+			surface.SetTexture(scope)
+			surface.SetDrawColor(255, 255, 255, 255)
 
-         surface.DrawTexturedRectRotated(x, y, scope_size, scope_size, 0)
+			surface.DrawTexturedRectRotated(x, y, scope_size, scope_size, 0)
+		else
+			return self.BaseClass.DrawHUD(self)
+		end
+	end
 
-      else
-         return self.BaseClass.DrawHUD(self)
-      end
-   end
-   
-   function SWEP:AdjustMouseSensitivity()
-      return (self:GetIronsights() and 0.2) or nil
-   end
+	function SWEP:AdjustMouseSensitivity()
+		return (self:GetIronsights() and 0.2) or nil
+	end
 end
 
 if( SERVER )then
