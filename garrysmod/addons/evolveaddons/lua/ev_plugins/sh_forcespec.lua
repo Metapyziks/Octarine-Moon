@@ -12,6 +12,11 @@ function PLUGIN:Call( ply, args )
 		
 		for _, pl in ipairs( players ) do
 			if pl:IsTerror() and pl:Alive() then
+				if pl:IsActiveDetective() then -- set a new detective if needed
+					PromotePlayerToDetective(FindRandomPlayerSuitableForDetective())
+					pl:SetRole(ROLE_INNOCENT)
+					pl:StripWeapons()
+				end
 				pl:Kill()
 				pl:SetNWBool("body_found", true)
 			end

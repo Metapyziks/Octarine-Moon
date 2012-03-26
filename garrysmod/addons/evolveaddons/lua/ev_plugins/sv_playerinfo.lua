@@ -81,8 +81,8 @@ function PLUGIN:PlayerDisconnected( ply )
 		evolve:Notify( pl, evolve.colors.blue, ply:Nick(), evolve.colors.white, "'s Steam ID is ", evolve.colors.red, ply:SteamID() )
 	end
 	
-	-- If this person was detective then we need a new detective
-	if(ply:IsActiveDetective() and GetRoundState() == ROUND_ACTIVE)then
+	-- If this person was detective then we need a new detective, only if the time left is greater than 5 minutes
+	if(ply:IsActiveDetective() and GetRoundState() == ROUND_ACTIVE and (CurTime() < (GetGlobalFloat("ttt_round_end", 0) - 300)))then
 		PromotePlayerToDetective(FindRandomPlayerSuitableForDetective())
 	end
 end
