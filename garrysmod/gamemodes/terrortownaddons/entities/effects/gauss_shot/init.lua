@@ -8,14 +8,14 @@ function EFFECT:Init(data)
 
    self.HitBox    = data:GetMagnitude()
 
-   self.Duration  = 6
+   self.Duration  = 10
    self.EndTime   = CurTime() + self.Duration
 
    self.FadeIn   = CurTime() + 0.2
    self.FadeOut  = self.EndTime - 3
 
    self.Width = 0
-   self.WidthMax = 3
+   self.WidthMax = 5
 end
 
 function EFFECT:Think()

@@ -35,9 +35,9 @@ SWEP.Primary.Recoil         = 3
 SWEP.Primary.Automatic = true
 SWEP.Primary.Damage = 100
 SWEP.Primary.Cone = 0.0
-SWEP.Primary.ClipSize = 3
-SWEP.Primary.ClipMax = 3 -- keep mirrored to ammo
-SWEP.Primary.DefaultClip = 3
+SWEP.Primary.ClipSize = 2
+SWEP.Primary.ClipMax = 2 -- keep mirrored to ammo
+SWEP.Primary.DefaultClip = 2
 
 SWEP.ChargeEnd = 0
 
@@ -54,6 +54,8 @@ SWEP.Secondary.Sound = Sound("Default.Zoom")
 
 SWEP.IronSightsPos      = Vector( 5, -15, -2 )
 SWEP.IronSightsAng      = Vector( 2.6, 1.37, 3.5 )
+
+SWEP.ViewModelFOV = 50
 
 function SWEP:SetZoom(state)
 	if CLIENT then 
@@ -81,36 +83,53 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 	numbul = numbul or 1
 	cone   = cone   or 0
 
-	self.Owner:LagCompensation(true)
 	local bullet = {}
 	bullet.Num    = numbul
 	bullet.Src    = self.Owner:GetShootPos()
 	bullet.Dir    = self.Owner:GetAimVector()
-	if self:GetNWBool( "HasTarget" ) then
-		local targ = self:GetNWEntity( "CurTarget" )
-		if IsValid( targ ) then
-			local pos = targ:GetPos() + Vector( 0, 0, 60 )
-			if targ:Crouching() then
-				pos = pos + Vector( 0, 0, -36 )
-			end
-			local diff = pos - self.Owner:GetShootPos()
-			bullet.Dir = diff:GetNormal()
-		end
-	end
 	bullet.Spread = Vector( cone, cone, 0 )
 	bullet.Tracer = 4
-	bullet.Force  = 10
+	bullet.Force  = 50
 	bullet.Damage = dmg
+	
+	local forcehurt = false
+	local targ = nil
+	local targpos = nil
+	
+	if self:GetNWBool( "HasTarget" ) then
+		targ = self:GetNWEntity( "CurTarget" )
+		if IsValid( targ ) then
+			forcehurt = true
+			targpos = targ:GetPos() + Vector( 0, 0, 60 )
+			if targ:Crouching() then
+				targpos = targpos + Vector( 0, 0, -36 )
+			end
+			local diff = targpos - self.Owner:GetShootPos()
+			bullet.Dir = diff
+			bullet.Damage = 0
+		end
+	end
 	if SERVER or (CLIENT and IsFirstTimePredicted()) then
-		bullet.Callback = function(att, tr, dmginfo)			
+		bullet.Callback = function(att, tr, dmginfo)
 			local e = EffectData()
 			e:SetEntity(att)
 			e:SetStart(tr.StartPos)
 			e:SetOrigin(tr.HitPos)
 			e:SetMagnitude(tr.HitBox)
 			e:SetScale(1)
-
 			util.Effect("gauss_shot", e)
+			
+			if SERVER and forcehurt then
+				e:SetOrigin( targpos )
+				local fdmginfo = DamageInfo()
+				fdmginfo:SetDamage( dmg )
+				fdmginfo:SetAttacker( self.Owner )
+				fdmginfo:SetInflictor( self.Owner )
+				fdmginfo:SetDamageType( DMG_BULLET )
+				fdmginfo:SetDamageForce( 50 * tr.Normal )
+				self.ScaleDamage( targ, nil, fdmginfo )
+				targ:TakeDamageInfo( fdmginfo )
+			end
 		end
 	end
 
@@ -124,7 +143,6 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 	end
 	
 	self.Owner:FireBullets( bullet )
-	self.Owner:LagCompensation(false)
 
 	-- Owner can die after firebullets
 	if (not IsValid(self.Owner)) or (not self.Owner:Alive()) or self.Owner:IsNPC() then return end
@@ -152,8 +170,9 @@ function SWEP.ScaleDamage( ply, hitgroup, dmginfo )
 	
 	local len = ply:GetPos():Distance( att:GetPos() )
 	local scale = math.max( math.min( 8.0, ( len - 256 ) / 256 ), 0.125 )
-	-- DamageLog( "Gauss Rifle Shot {" .. len .. "," .. scale .. "}" )
+	print( "Gauss Rifle Shot {" .. len .. "," .. scale .. "}" )
 	dmginfo:ScaleDamage( scale )
+	dmginfo:SetDamageForce( scale * dmginfo:GetDamageForce() )
 end
 hook.Add( "ScalePlayerDamage", "GaussScaleDamage", SWEP.ScaleDamage )
 
@@ -237,6 +256,7 @@ if CLIENT then
 	SWEP.LastTargCheck = 0
 	SWEP.Targets = {}
 	SWEP.CurTarget = nil
+	SWEP.LastTargetTime = 0
 	
 	local scope = surface.GetTextureID("sprites/scope")
 	function SWEP:CheckForTargets()
@@ -274,12 +294,18 @@ if CLIENT then
 			end
 		end
 		
+		if self.CurTarget ~= nil and not table.HasValue( self.Targets, self.CurTarget ) then
+			self:UpdateTarget( nil )
+		end
+		
 		table.sort( self.Targets, function( a, b )
 			return a.Angle < b.Angle
 		end )
 	end
 	
 	function SWEP:UpdateTarget( targ )
+		if targ == nil and CurTime() - self.LastTargetTime < 0.5 then return end
+		
 		self.CurTarget = targ
 		if IsValid( targ ) then
 			RunConsoleCommand( "ttt_gauss_changetarget", targ:EntIndex() )
@@ -341,6 +367,7 @@ if CLIENT then
 					if dist < targdist or targdist == 0 then
 						newtarg = ply
 						targdist = dist
+						self.LastTargetTime = CurTime()
 					end
 				end
 				
