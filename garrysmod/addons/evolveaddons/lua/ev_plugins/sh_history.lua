@@ -24,7 +24,7 @@ if( SERVER ) then
 		local h_a, h_b, h_c = debug.gethook()
 		debug.sethook()
 		file.Write( "ev_warnhistory.txt", glon.encode( HISTORY.PlayerData ) )
-		debug.sethook(h_a, h_b, h_c)
+		debug.sethook( nil, h_a, h_b, h_c )
 	end
 
 	function HISTORY.AddWarning( admin, uid, reason )
