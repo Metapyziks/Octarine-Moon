@@ -11,7 +11,7 @@ PLUGIN.Usage = nil
 PLUGIN.Privileges = { "Get Spray Owner" }
 
 if( SERVER ) then
-	PLUGIN.Spays = {}
+	PLUGIN.Sprays = {}
 	
 	function PLUGIN:AddSpray( ply, pos )		
 		for i, sp in ipairs( self.Sprays ) do
@@ -26,7 +26,7 @@ if( SERVER ) then
 	
 	function PLUGIN:GetSprayOwner( pos )
 		local nearest = nil
-		local ndist = 256
+		local ndist = 96
 		local i = #self.Sprays
 		while i > 0 do
 			local spray = self.Sprays[ i ]
@@ -49,10 +49,10 @@ if( SERVER ) then
 		end
 	end
 	
-	function GM:PlayerSpray( ply )
+	function PLUGIN:PlayerSpray( ply )
 		local trdata = {}
 		trdata.start = ply:GetShootPos()
-		trdata.endpos = tradata.start + ply:GetAimVector() * 128
+		trdata.endpos = trdata.start + ply:GetAimVector() * 128
 		trdata.filter = ply
 		trdata.mask = MASK_SOLID_BRUSHONLY
 		local tr = util.TraceLine( trdata )
@@ -63,7 +63,7 @@ if( SERVER ) then
 		if IsValid( ply ) and ply:EV_HasPrivilege( "Get Spray Owner" ) then
 			local trdata = {}
 			trdata.start = ply:GetShootPos()
-			trdata.endpos = tradata.start + ply:GetAimVector() * 4096
+			trdata.endpos = trdata.start + ply:GetAimVector() * 4096
 			trdata.filter = ply
 			trdata.mask = MASK_SOLID_BRUSHONLY
 			local tr = util.TraceLine( trdata )
