@@ -100,9 +100,9 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 		targ = self:GetNWEntity( "CurTarget" )
 		if IsValid( targ ) then
 			forcehurt = true
-			targpos = targ:GetPos() + Vector( 0, 0, 60 )
+			targpos = targ:GetPos() + Vector( 0, 0, 48 )
 			if targ:Crouching() then
-				targpos = targpos + Vector( 0, 0, -36 )
+				targpos = targpos + Vector( 0, 0, -32 )
 			end
 			local diff = targpos - self.Owner:GetShootPos()
 			bullet.Dir = diff
@@ -271,9 +271,9 @@ if CLIENT then
 		
 		for _, ply in pairs( player.GetAll() ) do
 			if ply ~= lply and IsValid( ply ) and ply:Alive() and ply:IsTerror() then
-				local pos = ply:GetPos() + Vector( 0, 0, 60 )
+				local pos = ply:GetPos() + Vector( 0, 0, 48 )
 				if ply:Crouching() then
-					pos = pos + Vector( 0, 0, -36 )
+					pos = pos + Vector( 0, 0, -32 )
 				end
 				local diff = pos - lply:GetShootPos()
 				local norm = diff:GetNormal()
