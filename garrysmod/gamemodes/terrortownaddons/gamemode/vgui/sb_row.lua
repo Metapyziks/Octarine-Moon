@@ -87,16 +87,6 @@ local function ColorForPlayer(ply)
    return namecolor.default
 end
 
-local detective_tag_colours = 
-{
-	sb_tag_none = Color( 0, 0, 0, 0 ),
-	sb_tag_friend = Color( 0, 255, 0, 15 ),
-	sb_tag_susp = Color( 255, 255, 0, 15 ),
-	sb_tag_avoid = Color( 255, 150, 0, 15 ),
-	sb_tag_kill = Color( 255, 0, 0, 15 ),
-	sb_tag_miss = Color( 130, 190, 130, 15 )
-}
-
 function PANEL:Paint()
 	if not ValidEntity(self.Player) then return end
 
@@ -112,15 +102,6 @@ function PANEL:Paint()
 	elseif ply:IsDetective() then
 		surface.SetDrawColor(0, 0, 255, 30)
 		surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT)
-	else
-		local group = ScoreGroup( ply )
-		if group == GROUP_NOTFOUND or group == GROUP_TERROR then
-			local tag = ply:GetNWString( "DetectiveTag" )
-			if tag and tag ~= "sb_tag_none" then
-				surface.SetDrawColor(detective_tag_colours[ tag ])
-				surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT)
-			end
-		end
 	end
 
 	if ply == LocalPlayer() then
@@ -158,43 +139,61 @@ end
 
 function PANEL:GetPlayer() return self.Player end
 
+local detective_tag_colours = 
+{
+	sb_tag_none = Color( 0, 0, 0, 0 ),
+	sb_tag_friend = Color( 0, 255, 0, 47 ),
+	sb_tag_susp = Color( 255, 255, 0, 47 ),
+	sb_tag_avoid = Color( 255, 150, 0, 47 ),
+	sb_tag_kill = Color( 255, 0, 0, 47 ),
+	sb_tag_miss = Color( 130, 190, 130, 47 )
+}
+
 function PANEL:UpdatePlayerData()
-   if not IsValid(self.Player) then return end
+	if not IsValid(self.Player) then return end
 
-   local ply = self.Player
-   self.cols[1]:SetText(ply:Ping())
-   self.cols[2]:SetText(ply:Deaths())
-   self.cols[3]:SetText(ply:Frags())
+	local ply = self.Player
+	self.cols[1]:SetText(ply:Ping())
+	self.cols[2]:SetText(ply:Deaths())
+	self.cols[3]:SetText(ply:Frags())
 
-   if self.cols[4] then
-      self.cols[4]:SetText(math.Round(ply:GetBaseKarma()))
-   end
+	if self.cols[4] then
+		self.cols[4]:SetText(math.Round(ply:GetBaseKarma()))
+	end
 
-   self.nick:SetText(ply:Nick())
-   self.nick:SizeToContents()
-   self.nick:SetFGColor(ColorForPlayer(ply))
+	self.nick:SetText(ply:Nick())
+	self.nick:SizeToContents()
+	self.nick:SetFGColor(ColorForPlayer(ply))
 
-   local ptag = ply.sb_tag
-   if ScoreGroup(ply) != GROUP_TERROR then
-      ptag = nil
-   end
+	local ptag = ply.sb_tag
+	if ScoreGroup(ply) != GROUP_TERROR then
+		ptag = nil
+	elseif not ptag or ptag.txt == "sb_tag_none" then
+		local dtag = ply:GetNWString( "DetectiveTag" )
+		if dtag and dtag ~= "sb_tag_none" then
+			ptag = { txt = dtag, color = detective_tag_colours[ dtag ], det = true }
+		end
+	end
+	local tagtxt = ptag and GetTranslation(ptag.txt) or ""
+	if ptag and ptag.det then
+		tagtxt = "[" .. tagtxt .. "]"
+	end
+	self.tag:SetText( tagtxt )
+	self.tag:SetFGColor(ptag and ptag.color or COLOR_WHITE)
 
-   self.tag:SetText(ptag and GetTranslation(ptag.txt) or "")
-   self.tag:SetFGColor(ptag and ptag.color or COLOR_WHITE)
+	self.sresult:SetVisible(ply.search_result != nil)
 
-   self.sresult:SetVisible(ply.search_result != nil)
+	-- more blue if a detective searched them
+	if ply.search_result and (LocalPlayer():IsDetective() or (not ply.search_result.show)) then
+		self.sresult:SetImageColor(Color(200, 200, 255))
+	end
 
-   -- more blue if a detective searched them
-   if ply.search_result and (LocalPlayer():IsDetective() or (not ply.search_result.show)) then
-      self.sresult:SetImageColor(Color(200, 200, 255))
-   end
+	-- cols are likely to need re-centering
+	self:LayoutColumns()
 
-   -- cols are likely to need re-centering
-   self:LayoutColumns()
-
-   if self.info then
-      self.info:UpdatePlayerData()
-   end
+	if self.info then
+		self.info:UpdatePlayerData()
+	end
 end
 
 function PANEL:ApplySchemeSettings()
