@@ -30,7 +30,7 @@ SWEP.CanBuy = {ROLE_TRAITOR}
 SWEP.LimitedStock = true
 
 SWEP.Primary.Delay          = 1.7
-SWEP.ChargeTime 			= 15
+SWEP.ChargeTime 			= 60
 SWEP.Primary.Recoil         = 3
 SWEP.Primary.Automatic = true
 SWEP.Primary.Damage = 100
