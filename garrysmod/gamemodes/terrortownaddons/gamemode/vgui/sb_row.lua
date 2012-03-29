@@ -175,7 +175,7 @@ function PANEL:UpdatePlayerData()
 		end
 	end
 	local tagtxt = ptag and GetTranslation(ptag.txt) or ""
-	if ptag and ptag.det then
+	if ptag and ptag.det and ptag.txt ~= "sb_tag_none" then
 		tagtxt = "[" .. tagtxt .. "]"
 	end
 	self.tag:SetText( tagtxt )
