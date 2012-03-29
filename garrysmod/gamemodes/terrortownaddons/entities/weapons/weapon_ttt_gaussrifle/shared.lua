@@ -55,7 +55,7 @@ SWEP.Secondary.Sound = Sound("Default.Zoom")
 SWEP.IronSightsPos      = Vector( 5, -15, -2 )
 SWEP.IronSightsAng      = Vector( 2.6, 1.37, 3.5 )
 
-SWEP.ViewModelFOV = 50
+SWEP.ViewModelFOV = 60
 
 function SWEP:SetZoom(state)
 	if CLIENT then 
@@ -69,12 +69,14 @@ function SWEP:SetZoom(state)
 	end
 end
 
-function SWEP:ShootBullet( dmg, recoil, numbul, cone )
+function SWEP:ShootBullet( dmg, recoil, numbul, cone, startpos )
+	local firstshot = startpos == nil
+	if firstshot then
+		self.Weapon:SendWeaponAnim(self.PrimaryAnim)
 
-	self.Weapon:SendWeaponAnim(self.PrimaryAnim)
-
-	self.Owner:MuzzleFlash()
-	self.Owner:SetAnimation( PLAYER_ATTACK1 )
+		self.Owner:MuzzleFlash()
+		self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	end
 
 	if not IsFirstTimePredicted() then return end
 
@@ -82,11 +84,14 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 
 	numbul = numbul or 1
 	cone   = cone   or 0
+	startpos = startpos or self.Owner:GetShootPos()
+	
+	local dir = self.Owner:GetAimVector()
 
 	local bullet = {}
 	bullet.Num    = numbul
-	bullet.Src    = self.Owner:GetShootPos()
-	bullet.Dir    = self.Owner:GetAimVector()
+	bullet.Src    = startpos
+	bullet.Dir    = dir
 	bullet.Spread = Vector( cone, cone, 0 )
 	bullet.Tracer = 4
 	bullet.Force  = 50
@@ -96,7 +101,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 	local targ = nil
 	local targpos = nil
 	
-	if self:GetNWBool( "HasTarget" ) then
+	if firstshot and self:GetNWBool( "HasTarget" ) then
 		targ = self:GetNWEntity( "CurTarget" )
 		if IsValid( targ ) then
 			forcehurt = true
@@ -119,21 +124,38 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 			e:SetScale(1)
 			util.Effect("gauss_shot", e)
 			
-			if SERVER and forcehurt then
+			if dmg >= 10 and not tr.HitSky then
+				local trdata = {}
+				trdata.start = tr.HitPos + 16 * dir
+				trdata.endpos = tr.HitPos
+				trdata.filter = lply
+				trdata.mask = MASK_SHOT
+				
+				local trace = util.TraceLine( trdata )
+				
+				if not trace.StartSolid then
+					self:ShootBullet( dmg * trace.Fraction * 0.9, recoil, numbul, cone + 0.125 * ( 1 - trace.Fraction ), trace.HitPos + 1 * dir )
+				end
+			end
+			
+			if firstshot and forcehurt then
 				e:SetOrigin( targpos )
-				local fdmginfo = DamageInfo()
-				fdmginfo:SetDamage( dmg )
-				fdmginfo:SetAttacker( self.Owner )
-				fdmginfo:SetInflictor( self.Owner )
-				fdmginfo:SetDamageType( DMG_BULLET )
-				fdmginfo:SetDamageForce( 50 * tr.Normal )
-				self.ScaleDamage( targ, nil, fdmginfo )
-				targ:TakeDamageInfo( fdmginfo )
+				if SERVER then
+					local fdmginfo = DamageInfo()
+					fdmginfo:SetDamage( dmg )
+					fdmginfo:SetAttacker( self.Owner )
+					fdmginfo:SetInflictor( self.Owner )
+					fdmginfo:SetDamageType( DMG_BULLET )
+					fdmginfo:SetDamageForce( 50 * tr.Normal )
+					hook.Call( "ScalePlayerDamage", GAMEMODE, targ, HITGROUP_CHEST, fdmginfo )
+					hook.Call( "EntityTakeDamage", GAMEMODE, targ, self, self.Owner, fdmginfo:GetDamage(), fdmginfo )
+					targ:TakeDamageInfo( fdmginfo )
+				end
 			end
 		end
 	end
 
-	if SERVER then
+	if firstshot and SERVER then
 		local ply = self.Owner
 		local pos = ply:GetPos()
 		local ang = ply:EyeAngles()
@@ -145,7 +167,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 	self.Owner:FireBullets( bullet )
 
 	-- Owner can die after firebullets
-	if (not IsValid(self.Owner)) or (not self.Owner:Alive()) or self.Owner:IsNPC() then return end
+	if not firstshot or (not IsValid(self.Owner)) or (not self.Owner:Alive()) or self.Owner:IsNPC() then return end
 
 	if ((SinglePlayer() and SERVER) or
 		((not SinglePlayer()) and CLIENT and IsFirstTimePredicted())) then
@@ -170,7 +192,6 @@ function SWEP.ScaleDamage( ply, hitgroup, dmginfo )
 	
 	local len = ply:GetPos():Distance( att:GetPos() )
 	local scale = math.max( math.min( 8.0, ( len - 256 ) / 256 ), 0.125 )
-	print( "Gauss Rifle Shot {" .. len .. "," .. scale .. "}" )
 	dmginfo:ScaleDamage( scale )
 	dmginfo:SetDamageForce( scale * dmginfo:GetDamageForce() )
 end
