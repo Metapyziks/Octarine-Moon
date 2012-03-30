@@ -1,7 +1,7 @@
 # Trouble in Terrorist Town weapon/ammo placement overrides
 # For map: ttt_concrete_a5
 # Exported by: Metapyziks
-setting:	replacespawns 1
+setting:	replacespawns 0
 weapon_zm_pistol	-501.7031 779.6131 352.1411	0.015 35.145 88.274
 weapon_zm_pistol	-1217.2451 1306.0405 144.3116	-0.095 35.998 88.670
 weapon_zm_pistol	-2002.1375 395.8474 360.0158	-0.559 35.368 88.767
