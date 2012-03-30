@@ -170,12 +170,12 @@ function PANEL:UpdatePlayerData()
 		ptag = nil
 	elseif not ptag or ptag.txt == "sb_tag_none" then
 		local dtag = ply:GetNWString( "DetectiveTag" )
-		if dtag and dtag ~= "sb_tag_none" then
+		if dtag and dtag ~= "" and dtag ~= "sb_tag_none" then
 			ptag = { txt = dtag, color = detective_tag_colours[ dtag ], det = true }
 		end
 	end
-	local tagtxt = ptag and GetTranslation(ptag.txt) or ""
-	if ptag and ptag.det and ptag.txt ~= "sb_tag_none" then
+	local tagtxt = ptag and GetTranslation( ptag.txt ) or ""
+	if ptag and ptag.det then
 		tagtxt = "[" .. tagtxt .. "]"
 	end
 	self.tag:SetText( tagtxt )
