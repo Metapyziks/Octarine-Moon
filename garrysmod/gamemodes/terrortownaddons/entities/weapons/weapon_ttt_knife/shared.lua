@@ -265,11 +265,6 @@ function SWEP:Equip()
    self.Weapon:SetNextSecondaryFire( CurTime() + (self.Secondary.Delay * 1.5) )
 end
 
-function SWEP:PreDrop()
-   -- for consistency, dropped knife should not have DNA/prints
-   self.fingerprints = {}
-end
-
 function SWEP:OnRemove()
    if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
