@@ -178,7 +178,10 @@ function SWEP:StabKill(tr, spos, sdest)
                          knife:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
                          knife:SetAngles(ang)
                          knife.CanPickup = false
-
+						 
+						 knife.fingerprints = prints
+						 knife:SetNWBool("HasPrints", true)
+					 
                          knife:Spawn()
 
                          local phys = knife:GetPhysicsObject()
@@ -248,6 +251,8 @@ function SWEP:SecondaryAttack()
       knife.Damage = self.Damage:GetInt()
 
       knife:SetOwner(ply)
+	  knife.fingerprints = self.fingerprints
+      knife:SetNWBool("HasPrints", true)
 
       local phys = knife:GetPhysicsObject()
       if ValidEntity(phys) then
@@ -298,4 +303,29 @@ if CLIENT then
    end
 end
 
+if( SERVER )then
+	local oldCorpseCreate = CORPSE.Create
+	function CORPSE.Create(ply, attacker, dmginfo)
+		if not GetConVar("ttt_server_ragdolls"):GetBool() then
+			return oldCorpseCreate( ply, attacker, dmginfo )
+		else
+			local rag = oldCorpseCreate( ply, attacker, dmginfo )
+			
+			if( rag and dmginfo:GetDamageType() == DMG_SLASH ) then
+				local dist = ply:GetPos():Distance(attacker:GetPos())
 
+				if dist > GetConVarNumber("ttt_killer_dna_range") then return rag end
+			
+				local sample = {}
+				sample.killer = attacker
+				sample.killer_uid = attacker:UniqueID()
+				sample.victim = ply
+				sample.t      = CurTime() + (-1 * (0.019 * dist)^2 + GetConVarNumber("ttt_killer_dna_basetime")) * 4
+
+				rag.killer_sample = sample
+			end
+
+			return rag
+		end
+	end
+end

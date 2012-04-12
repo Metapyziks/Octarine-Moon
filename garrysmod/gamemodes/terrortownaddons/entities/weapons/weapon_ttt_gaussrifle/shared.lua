@@ -147,9 +147,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone, startpos )
 					fdmginfo:SetInflictor( self.Owner )
 					fdmginfo:SetDamageType( DMG_BULLET )
 					fdmginfo:SetDamageForce( 50 * tr.Normal )
-					hook.Call( "ScalePlayerDamage", GAMEMODE, targ, HITGROUP_CHEST, fdmginfo )
-					hook.Call( "EntityTakeDamage", GAMEMODE, targ, self, self.Owner, fdmginfo:GetDamage(), fdmginfo )
-					targ:TakeDamageInfo( fdmginfo )
+					targ:DispatchTraceAttack( fdmginfo, startpos + ( self.Owner:GetAimVector() * 3 ), targpos )
 				end
 			end
 		end
@@ -193,7 +191,7 @@ function SWEP.ScaleDamage( ply, hitgroup, dmginfo )
 	local len = ply:GetPos():Distance( att:GetPos() )
 	local scale = math.max( math.min( 8.0, ( len - 256 ) / 256 ), 0.125 )
 	dmginfo:ScaleDamage( scale )
-	dmginfo:SetDamageForce( scale * dmginfo:GetDamageForce() )
+	dmginfo:SetDamageForce( scale * 50 * dmginfo:GetDamageForce():Normalize() )
 end
 hook.Add( "ScalePlayerDamage", "GaussScaleDamage", SWEP.ScaleDamage )
 
@@ -207,6 +205,9 @@ function SWEP:PrimaryAttack()
 		self:Reload()
 		
 		self.ChargeEnd = CurTime() + self.ChargeTime
+		if SERVER then
+			self:SetNWFloat( "ChargeEnd", self.ChargeEnd )
+		end
 	elseif( CLIENT ) then
 		self:EmitSound(self.Secondary.Sound)
 	end
@@ -229,6 +230,7 @@ function SWEP:SecondaryAttack()
 		self:SetNWBool( "HasTarget", false )
     else
         self:EmitSound(self.Secondary.Sound)
+		self.ChargeEnd = self:GetNWFloat( "ChargeEnd" )
 		self.CurTarget = nil
     end
     

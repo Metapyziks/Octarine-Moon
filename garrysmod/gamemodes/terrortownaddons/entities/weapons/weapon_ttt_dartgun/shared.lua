@@ -210,6 +210,7 @@ function SWEP:SpawnDart( trace )
 	end
 	dart:SetOwner( self.Owner )
 	dart.fingerprints = { self.Owner }
+    dart:SetNWBool("HasPrints", true)
 	dart:Spawn()
 end
 
