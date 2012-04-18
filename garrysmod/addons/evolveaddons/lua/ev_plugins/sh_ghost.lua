@@ -70,13 +70,6 @@ function PLUGIN:PlayerSpawn( ply )
 	end
 end
 
-function PLUGIN:PlayerCanPickupWeapon( ply, wep )
-	if ( ply:GetNWBool( "EV_Ghosted", false ) ) then
-		wep:SetRenderMode( RENDERMODE_NONE )
-		wep:SetColor( 255, 255, 255, 0 )
-	end
-end
-
 function PLUGIN:Menu( arg, players )
 	if ( arg ) then
 		table.insert( players, arg )

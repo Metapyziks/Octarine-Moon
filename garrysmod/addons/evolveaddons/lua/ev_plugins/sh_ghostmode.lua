@@ -60,6 +60,10 @@ if SERVER then
 			Sound("player/damage2.wav"),
 			Sound("player/damage3.wav")
 		};
+		
+		function GAMEMODE:GetFallDamage( ply, speed )
+			return 0
+		end
 
 		function GAMEMODE:OnPlayerHitGround(ply, in_water, on_floater, speed)
 			if in_water or speed < 450 or not IsValid(ply) then return end
@@ -112,7 +116,7 @@ if SERVER then
 				local oldDamage = damage
 				if PLUGIN.EnabledConVar:GetBool()
 					and ply:IsActiveTraitor() then
-					damage = math.floor( damage / 100 )
+					damage = damage / 100
 				end
 
 				if math.floor(damage) > 0 then

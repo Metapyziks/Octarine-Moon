@@ -376,10 +376,8 @@ function SWEP:Ammo1()
 end
 
 function SWEP:OnDrop()
-   if ( newowner:GetNWBool( "EV_Ghosted", false ) ) then
-      wep:SetRenderMode( RENDERMODE_NORMAL )
-      wep:SetColor( 255, 255, 255, 255 )
-   end
+   self:SetRenderMode( RENDERMODE_NORMAL )
+   self:SetColor( 255, 255, 255, 255 )
 end
 
 -- The OnDrop() hook is useless for this as it happens AFTER the drop. OwnerChange
@@ -431,8 +429,8 @@ function SWEP:Equip(newowner)
 
    if ValidEntity(newowner) then
       if ( newowner:GetNWBool( "EV_Ghosted", false ) ) then
-		 wep:SetRenderMode( RENDERMODE_NONE )
-		 wep:SetColor( 255, 255, 255, 0 )
+		 self:SetRenderMode( RENDERMODE_NONE )
+		 self:SetColor( 255, 255, 255, 0 )
 	  end
       if SERVER and self.StoredAmmo > 0 and self.Primary.Ammo != "none" then
          local ammo = newowner:GetAmmoCount(self.Primary.Ammo)

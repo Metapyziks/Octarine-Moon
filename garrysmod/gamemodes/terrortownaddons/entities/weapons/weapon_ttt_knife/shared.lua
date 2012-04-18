@@ -265,9 +265,14 @@ function SWEP:SecondaryAttack()
    end
 end
 
-function SWEP:Equip()
+function SWEP:Equip(newowner)
    self.Weapon:SetNextPrimaryFire( CurTime() + (self.Primary.Delay * 1.5) )
    self.Weapon:SetNextSecondaryFire( CurTime() + (self.Secondary.Delay * 1.5) )
+   
+	if ValidEntity( newowner ) and newowner:GetNWBool( "EV_Ghosted", false ) then
+		self:SetRenderMode( RENDERMODE_NONE )
+		self:SetColor( 255, 255, 255, 0 )
+	end
 end
 
 function SWEP:OnRemove()
