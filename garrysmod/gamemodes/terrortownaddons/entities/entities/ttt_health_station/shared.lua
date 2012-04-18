@@ -151,7 +151,8 @@ function ENT:GiveHealth(ply, max_heal)
 end
 
 function ENT:Use(ply)
-   if IsValid(ply) and ply:IsPlayer() and ply:IsActive() then
+   if IsValid(ply) and ply:IsPlayer() and ply:IsActive()
+	  and not ( GetConVar( "ttt_ghostmode_enabled" ):GetBool() and ply:IsActiveTraitor() ) then
       local t = CurTime()
       if t > self.NextHeal then
          local healed = self:GiveHealth(ply, self.HealRate)
