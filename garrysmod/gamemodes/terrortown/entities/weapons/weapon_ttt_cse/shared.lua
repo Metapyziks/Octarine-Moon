@@ -79,7 +79,7 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end
@@ -91,7 +91,7 @@ function SWEP:DropDevice()
 
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -102,7 +102,7 @@ function SWEP:DropDevice()
       local vthrow = vvel + vang * 200
 
       cse = ents.Create("ttt_cse_proj")
-      if ValidEntity(cse) then
+      if IsValid(cse) then
          cse:SetPos(vsrc + vang * 10)
          cse:SetOwner(ply)
          cse:SetThrower(ply)
@@ -110,7 +110,7 @@ function SWEP:DropDevice()
 
          cse:PhysWake()
          local phys = cse:GetPhysicsObject()
-         if ValidEntity(phys) then
+         if IsValid(phys) then
             phys:SetVelocity(vthrow)
          end
 

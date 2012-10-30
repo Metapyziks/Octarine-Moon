@@ -14,7 +14,7 @@ function GM:CheckFileConsistency()
    -- Loop over crc table and check values against local files
    for fname, crc in pairs(self.CRCs) do
       -- Why does util.CRC return a string?
-      local crc_local = crc32(fread(base_dir .. fname, true))
+      local crc_local = crc32(fread(base_dir .. fname, "GAME") or '')
       self.LocalCRCs[fname] = crc_local
 
       if crc_local != crc then
@@ -33,7 +33,7 @@ local knife_scripts = {
    "entities/weapons/weapon_ttt_knife/shared.lua",
    "entities/entities/ttt_knife_proj/shared.lua"
 };
-                       
+
 local function IsModdedKnife()
    for k, v in pairs(knife_scripts) do
       if IsModded(v) then return true end
@@ -56,7 +56,7 @@ GM.TagPredicates = {
    ["ttt:version"] =
       function(gm) return "ttt:v" .. gm.Version end,
 
-   ["ttt:custom_weapons"] = 
+   ["ttt:custom_weapons"] =
       function(gm) return gm.Customized end,
 
    ["ttt:language"] =
@@ -71,7 +71,7 @@ GM.TagPredicates = {
 
    ["ttt:modded_knife"] = IsModdedKnife,
 
-   ["ttt:vanilla"] = 
+   ["ttt:vanilla"] =
       function(gm)
          return ((not gm.Customized) and (#gm.ModdedScripts == 0) and
                  GetConVarNumber("ttt_haste") == 1 and

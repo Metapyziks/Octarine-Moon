@@ -11,7 +11,7 @@ function EFFECT:Init(data)
    self.Owner = data:GetEntity()
 
    self:SetPos(data:GetOrigin())
-   self:SetAngles(data:GetAngle())
+   self:SetAngles(data:GetAngles())
 
    self.BasePos = self:GetPos()
    self.BeamDownPos = self.BasePos + Vector(0, 0, final_height)
@@ -26,7 +26,7 @@ function EFFECT:Init(data)
    if IsValid(self.Owner) then
       self.Dummy = ClientsideModel(self.Owner:GetModel(), RENDERGROUP_OPAQUE)
       self.Dummy:SetPos(self.BasePos)
-      self.Dummy:SetAngles(data:GetAngle())
+      self.Dummy:SetAngles(data:GetAngles())
       self.Dummy:AddEffects(EF_NODRAW)
 
       local s = self.Dummy:LookupSequence("idle_all")
@@ -35,7 +35,7 @@ function EFFECT:Init(data)
       self.Dummy = nil
    end
 
-   WorldSound(loopsound, self:GetPos(), 50, 100)
+   sound.Play(loopsound, self:GetPos(), 50, 100)
 end
 
 function EFFECT:Think()
@@ -77,7 +77,7 @@ function EFFECT:Render()
    local pos = self:GetPos()
    local dist = norm:Dot(pos)
 
-   SetMaterialOverride(mat_rising)
+   render.MaterialOverride(mat_rising)
 
    render.EnableClipping(true)
    render.PushCustomClipPlane(norm, dist)
@@ -89,7 +89,7 @@ function EFFECT:Render()
    render.PopCustomClipPlane()
    render.EnableClipping(false)
 
-   SetMaterialOverride()
+   render.MaterialOverride()
 
    if self.DrawTop then
       render.SetMaterial(mat_rising)

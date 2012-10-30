@@ -14,35 +14,10 @@ CreateConVar("ttt_dyingshot", "0")
 CreateConVar("ttt_killer_dna_range", "550")
 CreateConVar("ttt_killer_dna_basetime", "100")
 
--- The team the player spawns on depends on the round state
-local function SelectTeam()
-   if GetRoundState() == ROUND_PREP then
-      return TEAM_TERROR
-   else
-      return TEAM_SPEC
-   end
-end
-
 -- First spawn on the server
 function GM:PlayerInitialSpawn( ply )
-   ply.has_spawned = false
 
-   ply:SetTeam(SelectTeam())
-
-   -- Change some gmod defaults
-   ply:SetCanZoom(false)
-   ply:SetJumpPower(160)
-   ply:SetSpeed(false)
-   ply:SetCrouchedWalkSpeed(0.3)
-
-   -- Always spawn innocent initially, traitor will be selected later
-   ply:ResetStatus()
-
-   -- Start off with clean, full karma (unless it can and should be loaded)
-   ply:InitKarma()
-
-   -- We never have weapons here, but this inits our equipment state
-   ply:StripAll()
+   ply:InitialSpawn()
 
    local rstate = GetRoundState() or ROUND_WAIT
    -- We should update the traitor list, if we are not about to send it
@@ -64,8 +39,6 @@ function GM:PlayerInitialSpawn( ply )
       ply:SetTeam(TEAM_SPEC)
       ply:SetForceSpec(true)
    end
-
-   GAMEMODE:CheckPlayerReconnected(ply)
 end
 
 function GM:NetworkIDValidated( name, steamid )
@@ -76,10 +49,6 @@ function GM:NetworkIDValidated( name, steamid )
          return
       end
    end
-end
-
-function GM:PlayerReconnected(ply)
-   -- karma loading used to happen here, now in ply:InitKarma
 end
 
 function GM:PlayerSpawn(ply)
@@ -116,8 +85,8 @@ function GM:PlayerSpawn(ply)
 end
 
 function GM:IsSpawnpointSuitable(ply, spwn, force, rigged)
-   if not ValidEntity(ply) or not ply:IsTerror() then return true end
-   if not rigged and (not ValidEntity(spwn) or not spwn:IsInWorld()) then return false end
+   if not IsValid(ply) or not ply:IsTerror() then return true end
+   if not rigged and (not IsValid(spwn) or not spwn:IsInWorld()) then return false end
 
    -- spwn is normally an ent, but we sometimes use a vector for jury rigged
    -- positions
@@ -128,7 +97,7 @@ function GM:IsSpawnpointSuitable(ply, spwn, force, rigged)
    local blocking = ents.FindInBox(pos + Vector( -16, -16, 0 ), pos + Vector( 16, 16, 64 ))
 
    for k, p in pairs(blocking) do
-      if ValidEntity(p) and p:IsPlayer() and p:IsTerror() and p:Alive() then
+      if IsValid(p) and p:IsPlayer() and p:IsTerror() and p:Alive() then
          if force then
             p:Kill()
          else
@@ -149,7 +118,7 @@ function GetSpawnEnts(shuffled, force_all)
    local tbl = {}
    for k, classname in pairs(SpawnTypes) do
       for _, e in pairs(ents.FindByClass(classname)) do
-         if ValidEntity(e) and (not e.BeingRemoved) then
+         if IsValid(e) and (not e.BeingRemoved) then
             table.insert(tbl, e)
          end
       end
@@ -161,7 +130,7 @@ function GetSpawnEnts(shuffled, force_all)
    -- spawn well. At all.
    if force_all or #tbl == 0 then
       for _, e in pairs(ents.FindByClass("info_player_start")) do
-         if ValidEntity(e) and (not e.BeingRemoved) then
+         if IsValid(e) and (not e.BeingRemoved) then
             table.insert(tbl, e)
          end
       end
@@ -176,7 +145,7 @@ end
 
 -- Generate points next to and above the spawn that we can test for suitability
 local function PointsAroundSpawn(spwn)
-   if not ValidEntity(spwn) then return {} end
+   if not IsValid(spwn) then return {} end
    local pos = spwn:GetPos()
 
    local w, h = 36, 72 -- bit roomier than player hull
@@ -237,11 +206,11 @@ function GM:PlayerSelectSpawn(ply)
       for _, rig in pairs(rigged) do
          if self:IsSpawnpointSuitable(ply, rig, false, true) then
             local rig_spwn = ents.Create("info_player_terrorist")
-            if ValidEntity(rig_spwn) then
+            if IsValid(rig_spwn) then
                rig_spwn:SetPos(rig)
                rig_spwn:Spawn()
 
-               ErrorNoHalt("WARNING: Map has too few spawn points, using a rigged spawn for ".. tostring(ply) .. "\n")
+               ErrorNoHalt("TTT WARNING: Map has too few spawn points, using a rigged spawn for ".. tostring(ply) .. "\n")
 
                self.HaveRiggedSpawn = true
                return rig_spwn
@@ -273,7 +242,7 @@ function GM:CanPlayerSuicide(ply)
 end
 
 function GM:PlayerSwitchFlashlight(ply, on)
-   if not ValidEntity(ply) then return false end
+   if not IsValid(ply) then return false end
 
    -- add the flashlight "effect" here, and then deny the switch
    -- this prevents the sound from playing, fixing the exploit
@@ -290,7 +259,7 @@ function GM:PlayerSwitchFlashlight(ply, on)
 end
 
 function GM:PlayerSpray(ply)
-   if not ValidEntity(ply) or not ply:IsTerror() then
+   if not IsValid(ply) or not ply:IsTerror() then
       return true -- block
    end
 end
@@ -300,7 +269,7 @@ function GM:PlayerUse(ply, ent)
 end
 
 function GM:KeyPress(ply, key)
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    -- Spectator keys
    if ply:IsSpec() and not ply:GetRagdollSpec() then
@@ -321,14 +290,14 @@ function GM:KeyPress(ply, key)
          if #alive < 1 then return end
 
          local target = table.Random(alive)
-         if ValidEntity(target) then
+         if IsValid(target) then
             ply:SetPos(target:EyePos())
          end
       elseif key == IN_ATTACK2 then
          -- spectate either the next guy or a random guy in chase
          local target = util.GetNextAlivePlayer(ply:GetObserverTarget())
 
-         if ValidEntity(target) then
+         if IsValid(target) then
             ply:Spectate(ply.spec_mode or OBS_MODE_CHASE)
             ply:SpectateEntity(target)
          end
@@ -337,7 +306,7 @@ function GM:KeyPress(ply, key)
          local ang = ply:EyeAngles()
 
          local target = ply:GetObserverTarget()
-         if ValidEntity(target) and target:IsPlayer() then
+         if IsValid(target) and target:IsPlayer() then
             pos = target:EyePos()
             ang = target:EyeAngles()
          end
@@ -373,7 +342,7 @@ end
 
 
 function GM:KeyRelease(ply, key)
-   if key == IN_USE and ValidEntity(ply) and ply:IsTerror() then
+   if key == IN_USE and IsValid(ply) and ply:IsTerror() then
       -- see if we need to do some custom usekey overriding
       local tr = util.TraceLine({
          start  = ply:GetShootPos(),
@@ -382,10 +351,10 @@ function GM:KeyRelease(ply, key)
          mask   = MASK_SHOT
       });
 
-      if tr.Hit and ValidEntity(tr.Entity) then
+      if tr.Hit and IsValid(tr.Entity) then
          if tr.Entity.CanUseKey and tr.Entity.UseOverride then
             local phys = tr.Entity:GetPhysicsObject()
-            if ValidEntity(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+            if IsValid(phys) and not phys:HasGameFlag(FVPHYSICS_PLAYER_HELD) then
                tr.Entity:UseOverride(ply)
                return true
             else
@@ -401,14 +370,22 @@ function GM:KeyRelease(ply, key)
 
 end
 
+function GM:PlayerButtonUp(ply, btn)
+   -- Would be nice to clean up this whole "all key handling in massive
+   -- functions" thing. oh well
+   if btn == KEY_PAD_ENTER then
+      WEPS.DisguiseToggle(ply)
+   end
+end
+
 -- Normally all dead players are blocked from IN_USE on the server, meaning we
 -- can't let them search bodies. This sucks because searching bodies is
 -- fun. Hence on the client we override +use for specs and use this instead.
 local function SpecUseKey(ply, cmd, arg)
-   if ValidEntity(ply) and ply:IsSpec() then
+   if IsValid(ply) and ply:IsSpec() then
       -- longer range than normal use
       local tr = util.QuickTrace(ply:GetShootPos(), ply:GetAimVector() * 128, ply)
-      if tr.Hit and ValidEntity(tr.Entity) then
+      if tr.Hit and IsValid(tr.Entity) then
          if tr.Entity.player_ragdoll then
             if not ply:KeyDown(IN_WALK) then
                CORPSE.ShowSearch(ply, tr.Entity)
@@ -447,9 +424,6 @@ function GM:PlayerDisconnected(ply)
    if KARMA.IsEnabled() then
       KARMA.Remember(ply)
    end
-
-   -- let fretta maintain disconnected player table
-   self.BaseClass:PlayerDisconnected(ply)
 end
 
 ---- Death affairs
@@ -494,9 +468,9 @@ local deathsounds = {
 
 
 local function PlayDeathSound(victim)
-   if not ValidEntity(victim) then return end
+   if not IsValid(victim) then return end
 
-   WorldSound(table.Random(deathsounds), victim:GetShootPos(), 90, 100)
+   sound.Play(table.Random(deathsounds), victim:GetShootPos(), 90, 100)
 end
 
 -- See if we should award credits now
@@ -570,7 +544,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
    -- Experimental: Fire a last shot if ironsighting and not headshot
    if GetConVar("ttt_dyingshot"):GetBool() then
       local wep = ply:GetActiveWeapon()
-      if ValidEntity(wep) and wep.DyingShot and not ply.was_headshot and dmginfo:IsBulletDamage() then
+      if IsValid(wep) and wep.DyingShot and not ply.was_headshot and dmginfo:IsBulletDamage() then
          local fired = wep:DyingShot()
          if fired then
             return
@@ -605,7 +579,7 @@ function GM:DoPlayerDeath(ply, attacker, dmginfo)
    if GetRoundState() == ROUND_ACTIVE then
       SCORE:HandleKill(ply, attacker, dmginfo)
 
-      if ValidEntity(attacker) and attacker:IsPlayer() then
+      if IsValid(attacker) and attacker:IsPlayer() then
          attacker:RecordKill(ply)
 
          DamageLog(Format("KILL:\t %s [%s] killed %s [%s]", attacker:Nick(), attacker:GetRoleString(), ply:Nick(), ply:GetRoleString()))
@@ -705,7 +679,7 @@ function GM:SpectatorThink(ply)
          if spec_spawns and #spec_spawns > 0 then
             local spawn = table.Random(spec_spawns)
             ply:SetPos(spawn:GetPos())
-            ply:SnapEyeAngles(spawn:GetAngles())
+            ply:SetEyeAngles(spawn:GetAngles())
          end
       elseif (m == OBS_MODE_IN_EYE and clicked and elapsed > to_switch) or elapsed > to_chase then
          -- start following ragdoll
@@ -740,14 +714,6 @@ end
 GM.PlayerDeathThink = GM.SpectatorThink
 
 function GM:PlayerTraceAttack(ply, dmginfo, dir, trace)
-   --if SERVER then
-   --   GAMEMODE:ScalePlayerDamage(ply, trace.HitGroup, dmginfo)
-   --end
-
-   -- derp. ScalePlayerDamage is basically broken, called twice and ignored
-   -- etc., so we work around that by manually scaling damage in
-   -- entitytakedamage
-
    if IsValid(ply.hat) and trace.HitGroup == HITGROUP_HEAD then
       ply.hat:Drop(dir)
    end
@@ -757,21 +723,13 @@ function GM:PlayerTraceAttack(ply, dmginfo, dir, trace)
    return false
 end
 
-function GM:ScalePlayerDamage(ply, hitgroup, dmginfo, real)
-   -- There's a phantom call to this function made by gmod, ignore it.
-   if not real then return end
-
-   -- For unknown reasons, damage is doubled by gmod. Compensate for that here.
-   dmginfo:SetDamage(dmginfo:GetBaseDamage() / 2)
-
-
-   ply.was_headshot = false
-
+function GM:ScalePlayerDamage(ply, hitgroup, dmginfo)
    if dmginfo:IsBulletDamage() and ply:HasEquipmentItem(EQUIP_ARMOR) then
       -- Body armor nets you a damage reduction.
       dmginfo:ScaleDamage(0.7)
    end
 
+   ply.was_headshot = false
    -- actual damage scaling
    if hitgroup == HITGROUP_HEAD then
       -- headshot if it was dealt by a bullet
@@ -864,8 +822,8 @@ function GM:OnPlayerHitGround(ply, in_water, on_floater, speed)
    if math.floor(damage) > 0 then
       local dmg = DamageInfo()
       dmg:SetDamageType(DMG_FALL)
-      dmg:SetAttacker(GetWorldEntity())
-      dmg:SetInflictor(GetWorldEntity())
+      dmg:SetAttacker(game.GetWorld())
+      dmg:SetInflictor(game.GetWorld())
       dmg:SetDamageForce(Vector(0,0,1))
       dmg:SetDamage(damage)
 
@@ -873,7 +831,7 @@ function GM:OnPlayerHitGround(ply, in_water, on_floater, speed)
 
       -- play CS:S fall sound if we got somewhat significant damage
       if damage > 5 then
-         WorldSound(table.Random(fallsounds), ply:GetShootPos(), 55 + math.Clamp(damage, 0, 50), 100)
+         sound.Play(table.Random(fallsounds), ply:GetShootPos(), 55 + math.Clamp(damage, 0, 50), 100)
       end
    end
 end
@@ -886,18 +844,19 @@ function GM:AllowPVP()
 end
 
 -- No damage during prep, etc
-function GM:EntityTakeDamage(ent, infl, att, amount, dmginfo)
-   if not ValidEntity(ent) then return end
+function GM:EntityTakeDamage(ent, dmginfo)
+   if not IsValid(ent) then return end
+   local att = dmginfo:GetAttacker()
 
    if not GAMEMODE:AllowPVP() then
       -- if player vs player damage, or if damage versus a prop, then zero
-      if (ent:IsExplosive() or (ent:IsPlayer() and ValidEntity(att) and att:IsPlayer())) then
+      if (ent:IsExplosive() or (ent:IsPlayer() and IsValid(att) and att:IsPlayer())) then
          dmginfo:ScaleDamage(0)
          dmginfo:SetDamage(0)
       end
    elseif ent:IsPlayer() then
 
-      GAMEMODE:PlayerTakeDamage(ent, infl, att, amount, dmginfo)
+      GAMEMODE:PlayerTakeDamage(ent, dmginfo:GetInflictor(), att, dmginfo:GetDamage(), dmginfo)
 
    elseif ent:IsExplosive() then
       -- When a barrel hits a player, that player damages the barrel because
@@ -999,10 +958,6 @@ function GM:PlayerTakeDamage(ent, infl, att, amount, dmginfo)
       dmginfo:SetAttacker(att)
    end
 
-   -- Perform damage scaling
-   GAMEMODE:ScalePlayerDamage(ent, ent:LastHitGroup() or HITGROUP_GENERIC, dmginfo, true)
-
-
    -- scale phys damage caused by props
    if dmginfo:IsDamageType(DMG_CRUSH) and IsValid(att) then
 
@@ -1013,7 +968,7 @@ function GM:PlayerTakeDamage(ent, infl, att, amount, dmginfo)
          dmginfo:ScaleDamage(0.25)
 
          -- if the prop is held, no damage
-         if ValidEntity(infl) and ValidEntity(infl:GetOwner()) and infl:GetOwner():IsPlayer() then
+         if IsValid(infl) and IsValid(infl:GetOwner()) and infl:GetOwner():IsPlayer() then
             dmginfo:ScaleDamage(0)
             dmginfo:SetDamage(0)
          end
@@ -1034,7 +989,7 @@ function GM:PlayerTakeDamage(ent, infl, att, amount, dmginfo)
 
    -- try to work out if this was push-induced leech-water damage (common on
    -- some popular maps like dm_island17)
-   if ent.was_pushed and ent == att and dmginfo:GetDamageType() == DMG_GENERIC and (util.PointContents(dmginfo:GetDamagePosition()) & CONTENTS_WATER == CONTENTS_WATER) then
+   if ent.was_pushed and ent == att and dmginfo:GetDamageType() == DMG_GENERIC and util.BitSet(util.PointContents(dmginfo:GetDamagePosition()), CONTENTS_WATER) then
       local t = math.max(ent.was_pushed.t or 0, ent.was_pushed.hurt or 0)
       if t > CurTime() - 3 then
          dmginfo:SetAttacker(ent.was_pushed.att)
@@ -1087,8 +1042,8 @@ function GM:Tick()
                   local dmginfo = DamageInfo()
                   dmginfo:SetDamage(15)
                   dmginfo:SetDamageType(DMG_DROWN)
-                  dmginfo:SetAttacker(GetWorldEntity())
-                  dmginfo:SetInflictor(GetWorldEntity())
+                  dmginfo:SetAttacker(game.GetWorld())
+                  dmginfo:SetInflictor(game.GetWorld())
                   dmginfo:SetDamageForce(Vector(0,0,1))
 
                   ply:TakeDamageInfo(dmginfo)
@@ -1106,7 +1061,7 @@ function GM:Tick()
 
          -- Slow down ironsighters
          local wep = ply:GetActiveWeapon()
-         if ValidEntity(wep) and wep:GetIronsights() then
+         if IsValid(wep) and wep:GetIronsights() then
             ply:SetSpeed(true)
          else
             ply:SetSpeed(false)
@@ -1135,7 +1090,7 @@ function GM:Tick()
 end
 
 function GM:ShowHelp(ply)
-   if ValidEntity(ply) then
+   if IsValid(ply) then
       ply:ConCommand("ttt_helpscreen")
    end
 end

@@ -70,7 +70,7 @@ local throwsound = Sound( "Weapon_SLAM.SatchelThrow" )
 function SWEP:RadioDrop()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -81,14 +81,14 @@ function SWEP:RadioDrop()
       local vthrow = vvel + vang * 200
 
       local radio = ents.Create("ttt_radio")
-      if ValidEntity(radio) then
+      if IsValid(radio) then
          radio:SetPos(vsrc + vang * 10)
          radio:SetOwner(ply)
          radio:Spawn()
 
          radio:PhysWake()
          local phys = radio:GetPhysicsObject()
-         if ValidEntity(phys) then
+         if IsValid(phys) then
             phys:SetVelocity(vthrow)
          end   
          self:Remove()
@@ -104,7 +104,7 @@ end
 function SWEP:RadioStick()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -115,7 +115,7 @@ function SWEP:RadioStick()
 
       if tr.HitWorld then
          local radio = ents.Create("ttt_radio")
-         if ValidEntity(radio) then
+         if IsValid(radio) then
             radio:PointAtEntity(ply)
 
             local tr_ent = util.TraceEntity({start=spos, endpos=epos, filter=ignore, mask=MASK_SOLID}, radio)
@@ -131,7 +131,7 @@ function SWEP:RadioStick()
                radio:Spawn()
 
                local phys = radio:GetPhysicsObject()
-               if ValidEntity(phys) then
+               if IsValid(phys) then
                   phys:EnableMotion(false)
                end
 
@@ -151,7 +151,7 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end

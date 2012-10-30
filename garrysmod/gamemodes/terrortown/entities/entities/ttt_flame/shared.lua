@@ -69,7 +69,7 @@ function StartFires(pos, tr, num, lifetime, explode, dmgowner)
       flame:PhysWake()
 
       local phys = flame:GetPhysicsObject()
-      if ValidEntity(phys) then
+      if IsValid(phys) then
          -- the balance between mass and force is subtle, be careful adjusting
          phys:SetMass(2)
          phys:ApplyForceCenter(ang:Forward() * 500)
@@ -82,7 +82,7 @@ end
 
 function SpawnFire(pos, size, attack, fuel, owner, parent)
    local fire = ents.Create("env_fire")
-   if not ValidEntity(fire) then return end
+   if not IsValid(fire) then return end
 
    fire:SetParent(parent)
    fire:SetOwner(owner)
@@ -107,7 +107,7 @@ function RadiusDamage(dmginfo, pos, radius, inflictor)
 
    local tr = nil
    for k, vic in pairs(victims) do
-      if ValidEntity(vic) and inflictor:Visible(vic) then
+      if IsValid(vic) and inflictor:Visible(vic) then
          if vic:IsPlayer() and vic:Alive() and vic:Team() == TEAM_TERROR then
             vic:TakeDamageInfo(dmginfo)
          end
@@ -116,7 +116,7 @@ function RadiusDamage(dmginfo, pos, radius, inflictor)
 end
 
 function ENT:OnRemove()
-   if ValidEntity(self.firechild) then
+   if IsValid(self.firechild) then
       self.firechild:Remove()
    end
 end
@@ -163,7 +163,7 @@ function ENT:Think()
       return
    end
 
-   if ValidEntity(self.firechild) then
+   if IsValid(self.firechild) then
       if self.next_hurt < CurTime() then
          if self:WaterLevel() > 0 then
             self.dietime = 0
@@ -175,7 +175,7 @@ function ENT:Think()
          local dmg = DamageInfo()
          dmg:SetDamageType(DMG_BURN)
          dmg:SetDamage(math.random(4,6))
-         if ValidEntity(self:GetDamageParent()) then
+         if IsValid(self:GetDamageParent()) then
             dmg:SetAttacker(self:GetDamageParent())
          else
             dmg:SetAttacker(self)

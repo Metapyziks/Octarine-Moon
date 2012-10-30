@@ -26,7 +26,7 @@ ENT.Damage = 50
 
 function ENT:Initialize()
    self.Entity:SetModel(self.Model)
-   
+
    self.Entity:PhysicsInit(SOLID_VPHYSICS)
 
    if SERVER then
@@ -47,7 +47,7 @@ function ENT:HitPlayer(other, tr)
 
    local range_dmg = math.max(self.Damage, self.StartPos:Distance(self:GetPos()) / 3)
 
-   if other:Health() < range_dmg + 5 then
+   if other:Health() < range_dmg + 10 then
       self:KillPlayer(other, tr)
    elseif SERVER then
       local dmg = DamageInfo()
@@ -63,7 +63,7 @@ function ENT:HitPlayer(other, tr)
       other:DispatchTraceAttack(dmg, self:GetPos() + ang:Forward() * 3, other:GetPos())
 
       if not self.Weaponised then
-         self:BecomeWeapon()
+         self:BecomeWeaponDelayed()
       end
    end
 end
@@ -90,7 +90,7 @@ function ENT:KillPlayer(other, tr)
 
    other.effect_fn = function(rag)
 
-                        if not ValidEntity(knife) or not ValidEntity(rag) then return end
+                        if not IsValid(knife) or not IsValid(rag) then return end
 
                         knife:SetPos(pos)
                         knife:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
@@ -129,7 +129,7 @@ if SERVER then
 
      local tr = util.TraceLine({start=self:GetPos(), endpos=self:GetPos() + vel:GetNormal() * 20, filter={self.Entity, self:GetOwner()}, mask=MASK_SHOT_HULL})
 
-     if tr.Hit and tr.HitNonWorld and ValidEntity(tr.Entity) then
+     if tr.Hit and tr.HitNonWorld and IsValid(tr.Entity) then
         local other = tr.Entity
         if other:IsPlayer() then
            self:HitPlayer(other, tr)
@@ -153,7 +153,7 @@ if SERVER then
       wep.IsDropped = true
 
       local prints = self.fingerprints or {}
-      
+
       self:Remove()
 
       wep:Spawn()
@@ -163,11 +163,23 @@ if SERVER then
       return wep
    end
 
+   function ENT:BecomeWeaponDelayed()
+      -- delay the weapon-replacement a tick because Source gets very angry
+      -- if you do fancy stuff in a physics callback
+      local knife = self
+      timer.Simple(0,
+                   function()
+                      if IsValid(knife) and not knife.Weaponised then
+                         knife:BecomeWeapon()
+                      end
+                   end)
+   end
+
    function ENT:PhysicsCollide(data, phys)
       if self.Stuck then return false end
 
       local other = data.HitEntity
-      if not ValidEntity(other) and not other:IsWorld() then return end
+      if not IsValid(other) and not other:IsWorld() then return end
 
       if other:IsPlayer() then
          local tr = util.TraceLine({start=self:GetPos(), endpos=other:LocalToWorld(other:OBBCenter()), filter={self.Entity, self:GetOwner()}, mask=MASK_SHOT_HULL})
@@ -179,7 +191,7 @@ if SERVER then
       end
 
       if not self.Weaponised then
-         self:BecomeWeapon()
+         self:BecomeWeaponDelayed()
       end
    end
 end

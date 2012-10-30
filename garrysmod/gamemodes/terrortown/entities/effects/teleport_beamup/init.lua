@@ -14,7 +14,7 @@ function EFFECT:Init(data)
    self.Owner = data:GetEntity()
 
    self:SetPos(data:GetOrigin())
-   self:SetAngles(data:GetAngle())
+   self:SetAngles(data:GetAngles())
 
    self.BasePos = self:GetPos()
    self.BeamDownPos = self.BasePos + Vector(0, 0, final_height)
@@ -39,7 +39,7 @@ function EFFECT:Init(data)
    end
 
 
-   WorldSound(loopsound, self:GetPos(), 50, 100)
+   sound.Play(loopsound, self:GetPos(), 50, 100)
 end
 
 
@@ -83,7 +83,7 @@ function EFFECT:Render()
    local dist = norm:Dot(pos)
 
    -- do rendering
-   SetMaterialOverride(mat_rising)
+   render.MaterialOverride(mat_rising)
 
    render.EnableClipping(true)
    render.PushCustomClipPlane(norm, dist)
@@ -95,7 +95,7 @@ function EFFECT:Render()
    render.PopCustomClipPlane()
    render.EnableClipping(false)
 
-   SetMaterialOverride()
+   render.MaterialOverride()
 
    if self.DrawTop then
       render.SetMaterial(mat_rising)

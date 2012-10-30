@@ -19,17 +19,17 @@ function PANEL:Init()
    self.open = false
 
    self.cols = {}
-   self.cols[1] = vgui.Create("Label", self)
+   self.cols[1] = vgui.Create("DLabel", self)
    self.cols[1]:SetText(GetTranslation("sb_ping"))
-   
-   self.cols[2] = vgui.Create("Label", self)
+
+   self.cols[2] = vgui.Create("DLabel", self)
    self.cols[2]:SetText(GetTranslation("sb_deaths"))
-   
-   self.cols[3] = vgui.Create("Label", self)
+
+   self.cols[3] = vgui.Create("DLabel", self)
    self.cols[3]:SetText(GetTranslation("sb_score"))
 
    if KARMA.IsEnabled() then
-      self.cols[4] = vgui.Create("Label", self)
+      self.cols[4] = vgui.Create("DLabel", self)
       self.cols[4]:SetText(GetTranslation("sb_karma"))
    end
 
@@ -37,10 +37,10 @@ function PANEL:Init()
       c:SetMouseInputEnabled(false)
    end
 
-   self.tag = vgui.Create("Label", self)
+   self.tag = vgui.Create("DLabel", self)
    self.tag:SetText("")
    self.tag:SetMouseInputEnabled(false)
-   
+
    self.sresult = vgui.Create("DImage", self)
    self.sresult:SetSize(16,16)
    self.sresult:SetMouseInputEnabled(false)
@@ -49,7 +49,7 @@ function PANEL:Init()
    self.avatar:SetSize(SB_ROW_HEIGHT, SB_ROW_HEIGHT)
    self.avatar:SetMouseInputEnabled(false)
 
-   self.nick = vgui.Create("Label", self)
+   self.nick = vgui.Create("DLabel", self)
    self.nick:SetMouseInputEnabled(false)
 
    self:SetCursor( "hand" )
@@ -88,10 +88,10 @@ local function ColorForPlayer(ply)
 end
 
 function PANEL:Paint()
-   if not ValidEntity(self.Player) then return end
-   
+   if not IsValid(self.Player) then return end
+
 --   if ( self.Player:GetFriendStatus() == "friend" ) then
---      color = Color( 236, 181, 113, 255 )	
+--      color = Color( 236, 181, 113, 255 )
 --   end
 
    local ply = self.Player
@@ -101,13 +101,13 @@ function PANEL:Paint()
       surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT)
    elseif ply:IsDetective() then
       surface.SetDrawColor(0, 0, 255, 30)
-      surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT)      
+      surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT)
    end
 
-   
+
    if ply == LocalPlayer() then
       surface.SetDrawColor( 200, 200, 200, math.Clamp(math.sin(RealTime() * 2) * 50, 0, 100))
-      surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT ) 
+      surface.DrawRect(0, 0, self:GetWide(), SB_ROW_HEIGHT )
    end
 
    return true
@@ -131,7 +131,7 @@ function PANEL:SetPlayer(ply)
       end
    else
       self.info:SetPlayer(ply)
-      
+
       self:InvalidateLayout()
    end
 
@@ -154,7 +154,7 @@ function PANEL:UpdatePlayerData()
 
    self.nick:SetText(ply:Nick())
    self.nick:SizeToContents()
-   self.nick:SetFGColor(ColorForPlayer(ply))
+   self.nick:SetTextColor(ColorForPlayer(ply))
 
    local ptag = ply.sb_tag
    if ScoreGroup(ply) != GROUP_TERROR then
@@ -162,7 +162,7 @@ function PANEL:UpdatePlayerData()
    end
 
    self.tag:SetText(ptag and GetTranslation(ptag.txt) or "")
-   self.tag:SetFGColor(ptag and ptag.color or COLOR_WHITE)
+   self.tag:SetTextColor(ptag and ptag.color or COLOR_WHITE)
 
    self.sresult:SetVisible(ply.search_result != nil)
 
@@ -182,17 +182,17 @@ end
 function PANEL:ApplySchemeSettings()
    for k,v in pairs(self.cols) do
       v:SetFont("treb_small")
-      v:SetFGColor(COLOR_WHITE)
+      v:SetTextColor(COLOR_WHITE)
    end
 
    self.nick:SetFont("treb_small")
-   self.nick:SetFGColor(ColorForPlayer(self.Player))
+   self.nick:SetTextColor(ColorForPlayer(self.Player))
 
    local ptag = self.Player and self.Player.sb_tag
-   self.tag:SetFGColor(ptag and ptag.color or COLOR_WHITE)
+   self.tag:SetTextColor(ptag and ptag.color or COLOR_WHITE)
    self.tag:SetFont("treb_small")
 
-   self.sresult:SetImage("gui/silkicons/magnifier")
+   self.sresult:SetImage("icon16/magnifier.png")
    self.sresult:SetImageColor(Color(170, 170, 170, 150))
 end
 
@@ -211,7 +211,7 @@ end
 function PANEL:PerformLayout()
    self.avatar:SetPos(0,0)
    self.avatar:SetSize(SB_ROW_HEIGHT,SB_ROW_HEIGHT)
-   
+
    if not self.open then
       self:SetSize(self:GetWide(), SB_ROW_HEIGHT)
 
@@ -250,13 +250,9 @@ function PANEL:SetOpen(o)
    self:PerformLayout()
    self:GetParent():PerformLayout()
    sboard_panel:PerformLayout()
-   -- sboard_panel:PerformLayout()
 end
-
 
 function PANEL:DoRightClick()
 end
 
-
 vgui.Register( "TTTScorePlayerRow", PANEL, "Button" )
-

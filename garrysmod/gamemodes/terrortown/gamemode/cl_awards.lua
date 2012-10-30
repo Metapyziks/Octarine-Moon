@@ -7,6 +7,8 @@
 local table = table
 local pairs = pairs
 
+local is_dmg = util.BitSet
+
 -- so much text here I'm using shorter names than usual
 local T = LANG.GetTranslation
 local PT = LANG.GetParamTranslation
@@ -61,7 +63,7 @@ end
 local function ExplosiveGrant(events, scores, players, traitors)
    local bombers = {}
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and (e.dmg.t & DMG_BLAST == DMG_BLAST) then
+      if e.id == EVENT_KILL and is_dmg(e.dmg.t, DMG_BLAST) then
          bombers[e.att.uid] = (bombers[e.att.uid] or 0) + 1
       end
    end
@@ -90,7 +92,7 @@ end
 
 local function ExplodedSelf(events, scores, players, traitors)
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and (e.dmg.t & DMG_BLAST == DMG_BLAST) and e.att.uid == e.vic.uid then
+      if e.id == EVENT_KILL and is_dmg(e.dmg.t, DMG_BLAST) and e.att.uid == e.vic.uid then
          return {title=T("aw_exp2_title"), text=T("aw_exp2_text"), nick=e.vic.ni, priority=math.random(1, 4)}
       end
    end
@@ -138,13 +140,13 @@ local function AllKills(events, scores, players, traitors)
          table.insert(tr_killers, id)
       end
    end
-   
+
    if table.Count(tr_killers) == 1 then
       local id = tr_killers[1]
       if not table.HasValue(traitors, id) then
          local killer = players[id]
          if not killer then return nil end
-         
+
          return {nick=killer, title=T("aw_all1_title"), text=T("aw_all1_text"), priority=math.random(0, table.Count(players))}
       end
    end
@@ -232,7 +234,7 @@ end
 
 local function FallDeath(events, scores, players, traitors)
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and (e.dmg.t & DMG_FALL == DMG_FALL) then
+      if e.id == EVENT_KILL and is_dmg(e.dmg.t, DMG_FALL) then
          if e.att.ni != "" then
             return {title=T("aw_fal1_title"), nick=e.att.ni, text=T("aw_fal1_text"), priority=math.random(7, 15)}
          else
@@ -246,7 +248,7 @@ end
 
 local function FallKill(events, scores, players, traitors)
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and (e.dmg.t & DMG_CRUSH == DMG_CRUSH) and (e.dmg.t & DMG_PHYSGUN == DMG_PHYSGUN) then
+      if e.id == EVENT_KILL and is_dmg(e.dmg.t, DMG_CRUSH) and is_dmg(e.dmg.t, DMG_PHYSGUN) then
          if e.att.ni != "" then
             return {title=T("aw_fal3_title"), nick=e.att.ni, text=T("aw_fal3_text"), priority=math.random(10, 15)}
          end
@@ -257,11 +259,11 @@ end
 local function Headshots(events, scores, players, traitors)
    local hs = {}
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and e.dmg.h and (e.dmg.t & DMG_BULLET == DMG_BULLET) then
+      if e.id == EVENT_KILL and e.dmg.h and is_dmg(e.dmg.t, DMG_BULLET) then
          hs[e.att.uid] = (hs[e.att.uid] or 0) + 1
       end
    end
-   
+
    if table.Count(hs) == 0 then return nil end
 
    -- find the one with the most shots
@@ -581,7 +583,7 @@ local function TeamKiller(events, scores, players, traitors)
          kills = s.traitors
          team = num_traitors - 1
       end
-      
+
       if kills > 0 and (kills / team) > pct then
          pct = kills / team
          tker = id
@@ -631,11 +633,11 @@ end
 local function Burner(events, scores, players, traitors)
    local brn = {}
    for k, e in pairs(events) do
-      if e.id == EVENT_KILL and (e.dmg.t & DMG_BURN == DMG_BURN) then
+      if e.id == EVENT_KILL and is_dmg(e.dmg.t, DMG_BURN) then
          brn[e.att.uid] = (brn[e.att.uid] or 0) + 1
       end
    end
-   
+
    if table.Count(brn) == 0 then return nil end
 
    -- find the one with the most burnings

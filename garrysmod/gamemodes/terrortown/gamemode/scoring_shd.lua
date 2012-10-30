@@ -19,7 +19,7 @@ function ScoreEvent(e, scores)
 
       -- make sure a score table exists for this person
       -- he might have disconnected by now
-      if scores[vid] == nil then 
+      if scores[vid] == nil then
          scores[vid] = ScoreInit()
 
          -- normally we have the ply:GetTraitor stuff to base this on, but that
@@ -57,7 +57,7 @@ end
 function ScoreEventLog(events, scores, traitors, detectives)
    for k, s in pairs(scores) do
       scores[k] = ScoreInit()
-      
+
       scores[k].was_traitor = table.HasValue(traitors, k)
       scores[k].was_detective = table.HasValue(detectives, k)
    end
@@ -87,7 +87,7 @@ function ScoreTeamBonus(scores, wintype)
    local bonus = {}
    bonus.traitors = (alive.traitors * 1) + math.ceil(dead.innos * 0.5)
    bonus.innos = alive.innos * 1
-   
+
    -- running down the clock must never be beneficial for traitors
    if wintype == WIN_TIMELIMIT then
       bonus.traitors = math.floor(alive.innos * -0.5) + math.ceil(dead.innos * 0.5)
@@ -151,14 +151,14 @@ function GetWeaponClassNames()
       local tbl = {}
       for k,v in pairs(weapons.GetList()) do
          if v and v.WeaponID then
-            tbl[v.WeaponID] = v.Classname
+            tbl[v.WeaponID] = WEPS.GetClass(v)
          end
       end
 
       for k,v in pairs(scripted_ents.GetList()) do
          local id = v and (v.WeaponID or (v.t and v.t.WeaponID))
          if id then
-            tbl[id] = v.Classname
+            tbl[id] = WEPS.GetClass(v)
          end
       end
 
@@ -193,7 +193,7 @@ end
 
 -- something cheap to send over the network
 function WepToEnum(wep)
-   if not ValidEntity(wep) then return end
+   if not IsValid(wep) then return end
 
    return wep.WeaponID
 end

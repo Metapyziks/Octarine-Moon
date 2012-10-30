@@ -70,7 +70,7 @@ local function RoundStartPopup()
    dtext:SizeToContents()
    dtext:SetContentAlignment( 5 )
    dtext:SetTextColor( color_white )
-     
+
    local w, h = dtext:GetSize()
    local m = 10
 
@@ -99,13 +99,13 @@ local function IdlePopup()
 
    local inner = vgui.Create("DPanel", dframe)
    inner:StretchToParent(5, 25, 5, 45)
-   
+
    local idle_limit = GetGlobalInt("ttt_idle_limit", 300) or 300
 
    local text = vgui.Create("DLabel", inner)
    text:SetWrap(true)
    text:SetText(GetPTranslation("idle_popup", {num = idle_limit, helpkey = Key("gm_showhelp", "F1")}))
-   text:SetTextColor(COLOR_WHITE)
+   text:SetDark(true)
    text:StretchToParent(10,5,10,5)
 
    local bw, bh = 75, 25

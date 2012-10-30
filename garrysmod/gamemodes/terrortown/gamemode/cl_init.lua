@@ -9,11 +9,24 @@ COLOR_YELLOW = Color(200, 200, 0, 255)
 COLOR_LGRAY = Color(200, 200, 200, 255)
 COLOR_BLUE = Color(0,0,255, 255)
 
+-- Define GM12 fonts for compatibility
+surface.CreateFont("DefaultBold", {font = "Tahoma",
+                                   size = 13,
+                                   weight = 1000})
+surface.CreateFont("TabLarge",    {font = "Tahoma",
+                                   size = 13,
+                                   weight = 700,
+                                   shadow = true, antialias = false})
+surface.CreateFont("Trebuchet22", {font = "Trebuchet MS",
+                                   size = 22,
+                                   weight = 900})
+
 include("scoring_shd.lua")
 include("corpse_shd.lua")
 include("player_ext_shd.lua")
 include("weaponry_shd.lua")
 
+include("vgui/ColoredBox.lua")
 include("vgui/SimpleIcon.lua")
 include("vgui/ProgressBar.lua")
 include("vgui/ScrollLabel.lua")
@@ -49,22 +62,12 @@ function GM:Initialize()
    self.BaseClass:Initialize()
 end
 
-CreateConVar("ttt_cl_disable_frettasplash", "0", FCVAR_ARCHIVE)
 function GM:InitPostEntity()
    MsgN("TTT Client post-init...")
 
-   if not GetConVar("ttt_cl_disable_frettasplash"):GetBool() then
-      GAMEMODE:ShowSplash()
-   end
-
    RunConsoleCommand("ttt_spectate", GetConVar("ttt_spectator_mode"):GetInt())
 
-   if GetConVar("myinfo_bytes"):GetInt() < 1000 then
-      MsgN("Increasing net buffer size...")
-      RunConsoleCommand("myinfo_bytes", "1024")
-   end
-
-   if not SinglePlayer() then
+   if not game.SinglePlayer() then
       timer.Create("idlecheck", 5, 0, CheckIdle)
    end
 
@@ -190,7 +193,7 @@ local function ReceiveRoleList(um)
       local eidx = um:ReadShort()
 
       local ply = player.GetByID(eidx)
-      if ValidEntity(ply) and ply.SetRole then
+      if IsValid(ply) and ply.SetRole then
          ply:SetRole(role)
 
          if ply:IsTraitor() then
@@ -255,10 +258,10 @@ function GM:CleanUpMap()
    -- Ragdolls sometimes stay around on clients. Deleting them can create issues
    -- so all we can do is try to hide them.
    for _, ent in pairs(ents.FindByClass("prop_ragdoll")) do
-      if ValidEntity(ent) and CORPSE.GetPlayerNick(ent, "") != "" then
+      if IsValid(ent) and CORPSE.GetPlayerNick(ent, "") != "" then
          ent:SetNoDraw(true)
          ent:SetSolid(SOLID_NONE)
-         ent:SetColor(0,0,0,0)
+         ent:SetColor(Color(0,0,0,0))
 
          -- Horrible hack to make targetid ignore this ent, because we can't
          -- modify the collision group clientside.

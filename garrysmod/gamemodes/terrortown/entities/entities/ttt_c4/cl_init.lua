@@ -24,14 +24,14 @@ function ShowC4Config(bomb)
 
    local m = 5
 
-   local bg = vgui.Create("DColouredBox", dframe)
-   bg:SetColor(Color(50, 50, 50, 255))
+   local bg = vgui.Create("DPanel", dframe)
+   bg:SetPaintBackground(false)
    bg:SetPos(0,0)
    bg:StretchToParent(m,m*5,m,m)
 
    -- Time
    local dformtime = vgui.Create("DForm", bg)
-   dformtime:SetPos(m, 0)
+   dformtime:SetPos(m, m)
    dformtime:SetSize(w - m*4, h / 2)
    dformtime:SetName(T("c4_arm_timer"))
 
@@ -48,10 +48,12 @@ function ShowC4Config(bomb)
    local dtime = vgui.Create("DNumSlider", dformtime)
    dtime:SetWide(w - m*4)
    dtime:SetText(T("c4_arm_seconds"))
+   dtime:SetDark(false)
    dtime:SetMin(C4_MINIMUM_TIME)
    dtime:SetMax(C4_MAXIMUM_TIME)
    dtime:SetDecimals(0)
    dtime:SetValue(starttime)
+   dtime.Label:SetWrap(true)
 
    local dwires
 
@@ -80,13 +82,9 @@ function ShowC4Config(bomb)
 
    dformtime:AddItem(dwires)
 
-   dformtime:PerformLayout()
-
-   local sw, sh = dformtime:GetSize()
-
    local dformmisc = vgui.Create("DForm", bg)
    dformmisc:SetAutoSize(false)
-   dformmisc:SetPos(m, m + sh)
+   dformmisc:SetPos(m, m + 140)
    dformmisc:SetSize(w - m*4, h / 2)
    dformmisc:SetPadding(20)
    dformmisc:SetName(T("c4_remove_title"))
@@ -97,13 +95,13 @@ function ShowC4Config(bomb)
    local bw, bh = 110, 25
 
    local dgrab = vgui.Create("DButton", dformmisc)
-   dgrab:SetPos(m*6, m*4)
+   dgrab:SetPos(m*6, m*5)
    dgrab:SetSize(bw, bh)
    dgrab:SetText(T("c4_remove_pickup"))
    dgrab:SetDisabled(false)
    dgrab.DoClick = function()
                       if not LocalPlayer() or not LocalPlayer():Alive() then return end
-                      
+
                       RunConsoleCommand("ttt_c4_pickup", bomb:EntIndex())
                       dframe:Close()
                    end
@@ -111,7 +109,7 @@ function ShowC4Config(bomb)
    --dformmisc:AddItem(dgrab)
 
    local ddestroy = vgui.Create("DButton", dformmisc)
-   ddestroy:SetPos(w - m*4 - bw - m*6, m*4)
+   ddestroy:SetPos(w - m*4 - bw - m*6, m*5)
    ddestroy:SetSize(bw, bh)
    ddestroy:SetText(T("c4_remove_destroy1"))
    ddestroy:SetDisabled(false)
@@ -141,7 +139,7 @@ function ShowC4Config(bomb)
                          RunConsoleCommand("ttt_c4_config", bomb:EntIndex(), t)
                          dframe:Close()
                       end
-                   end   
+                   end
 
    local dcancel = vgui.Create("DButton", bg)
    dcancel:SetPos( w - m*4 - bw, m + by)
@@ -196,7 +194,7 @@ function PANEL:PaintOverHovered()
    surface.SetDrawColor(255, 255, 255, 255)
    surface.DrawTexturedRect(175, -20, 32, 32)
 
-   draw.SimpleText(PT("c4_disarm_cut", {num = self.Index}), "UiBold", 85, -10, COLOR_WHITE, 0, 0)
+   draw.SimpleText(PT("c4_disarm_cut", {num = self.Index}), "DermaDefault", 85, -10, COLOR_WHITE, 0, 0)
 end
 
 PANEL.OnMousePressed = DButton.OnMousePressed
@@ -283,7 +281,11 @@ end
 vgui.Register( "DisarmPanel", PANEL, "DPanel" )
 
 
-surface.CreateFont("TabLarge", 30, 750, true, false, "C4Timer", false, false)
+surface.CreateFont("C4Timer", {
+                      font = "TabLarge",
+                      size = 30,
+                      weight = 750
+                   })
 
 local disarm_success, disarm_fail
 
@@ -305,11 +307,13 @@ function ShowC4Disarm(bomb)
 
    local bw, bh = 100, 25
 
-   local dleft = vgui.Create("DPanel", dframe)
+   local dleft = vgui.Create("ColoredBox", dframe)
+   dleft:SetColor(Color(50, 50, 50))
    dleft:SetSize(left_w, left_h)
    dleft:SetPos(m, m + title_h)
 
-   local dright = vgui.Create("DPanel", dframe)
+   local dright = vgui.Create("ColoredBox", dframe)
+   dright:SetColor(Color(50, 50, 50))
    dright:SetSize(right_w, right_h)
    dright:SetPos(left_w + m * 2, m + title_h)
 
@@ -326,7 +330,7 @@ function ShowC4Disarm(bomb)
    dtimer.Stop = false
 
    dtimer.Think = function(s)
-                     if not ValidEntity(bomb) then return end
+                     if not IsValid(bomb) then return end
                      if s.Stop then return end
 
                      local t = bomb:GetExplodeTime()
@@ -378,13 +382,13 @@ function ShowC4Disarm(bomb)
                             dframe:Close()
                          end
                    end
-   
+
 
    local desc_h = 45
 
    local ddesc = vgui.Create("DLabel", dleft)
-   ddesc:SetTextColor(COLOR_WHITE)
-   ddesc:SetFont("TabLarge")
+   ddesc:SetBright(true)
+   ddesc:SetFont("DermaDefaultBold")
    ddesc:SetSize(256, desc_h)
    ddesc:SetWrap(true)
    if LocalPlayer():IsTraitor() then
@@ -396,7 +400,7 @@ function ShowC4Disarm(bomb)
    end
    ddesc:SetPos(m, m)
 
-   local bg = vgui.Create("DColouredBox", dleft)
+   local bg = vgui.Create("ColoredBox", dleft)
    bg:StretchToParent(m,m + desc_h,m,m)
    bg:SetColor(Color(20,20,20, 255))
 
@@ -410,8 +414,8 @@ function ShowC4Disarm(bomb)
    dcancel:SetSize(bw, bh)
    dcancel:CenterHorizontal()
    dcancel:SetText(T("close"))
-   dcancel.DoClick = function() 
-                        dframe:Close() 
+   dcancel.DoClick = function()
+                        dframe:Close()
                      end
 
    dframe:MakePopup()
@@ -436,9 +440,12 @@ function ShowC4Disarm(bomb)
                  end
 
    on_wire_cut = function(idx)
-                    dbomb:SetDisabled(true)
-                    -- disabled lowers alpha, looks weird here so work around that
-                    dbomb:SetAlpha(255)
+                    if IsValid(dbomb) then
+                       dbomb:SetDisabled(true)
+                       -- disabled lowers alpha, looks weird here so work around
+                       -- that
+                       dbomb:SetAlpha(255)
+                    end
 
                     if IsValid(bomb) then
                        RunConsoleCommand("ttt_c4_disarm", tostring(bomb:EntIndex()), tostring(idx))
@@ -451,9 +458,9 @@ end
 
 local function C4ConfigHook(um)
    local idx = um:ReadShort()
-   
+
    local bomb = ents.GetByIndex(idx)
-   if ValidEntity(bomb) then
+   if IsValid(bomb) then
       if not bomb:GetArmed() then
          ShowC4Config(bomb)
       else
@@ -470,12 +477,12 @@ local function C4DisarmResultHook(um)
    local correct = um:ReadBool()
 
    local bomb = ents.GetByIndex(idx)
-   if ValidEntity(bomb) then
+   if IsValid(bomb) then
       if correct and disarm_success then
          disarm_success()
       elseif disarm_fail then
          disarm_fail()
       end
-   end   
+   end
 end
 usermessage.Hook("c4_disarm_result", C4DisarmResultHook)

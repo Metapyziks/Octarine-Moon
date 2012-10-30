@@ -51,14 +51,19 @@ function PANEL:SetText(txt)
    -- Label's internal state that makes it work when resizing a second time a
    -- tick later (it certainly isn't any variant of PerformLayout I can find),
    -- but it does.
-   timer.Simple(0, self.UpdateScrollState, self)
+   local pnl = self.Panel
+   timer.Simple(0, function()
+                      if ValidPanel(pnl) then
+                         pnl:UpdateScrollState()
+                      end
+                   end)
 end
 
 function PANEL:PerformLayout()
    if not self.Scroll then return end
 
    self.Label:SetVisible(self:IsVisible())
-   
+
    self.Scroll:SetPos(self:GetWide() - 16, 0)
    self.Scroll:SetSize(16, self:GetTall())
 

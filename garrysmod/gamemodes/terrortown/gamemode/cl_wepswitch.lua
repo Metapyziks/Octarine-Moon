@@ -95,7 +95,7 @@ end
 
 local TryTranslation = LANG.TryTranslation
 function WSWITCH:DrawWeapon(x, y, c, wep)
-   if not ValidEntity(wep) then return false end
+   if not IsValid(wep) then return false end
 
    local name = TryTranslation(wep:GetPrintName() or wep.PrintName or "...")
    local cl1, am1 = wep:Clip1(), wep:Ammo1()
@@ -169,7 +169,7 @@ end
 local function CopyVals(src, dest)
    table.Empty(dest)
    for k, v in pairs(src) do
-      if ValidEntity(v) then
+      if IsValid(v) then
          table.insert(dest, v)
       end
    end   
@@ -287,7 +287,7 @@ function WSWITCH:ConfirmSelection()
    self:Disable()
 
    for k, w in pairs(self.WeaponCache) do
-      if k == self.Selected and ValidEntity(w) then
+      if k == self.Selected and IsValid(w) then
          RunConsoleCommand("wepswitch", w:GetClass())
          return
       end

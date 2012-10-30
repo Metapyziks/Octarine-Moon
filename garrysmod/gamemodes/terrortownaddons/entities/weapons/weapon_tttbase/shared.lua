@@ -147,10 +147,10 @@ if CLIENT then
       local x = ScrW() / 2.0
       local y = ScrH() / 2.0
       local scale = math.max(0.2,  10 * self:GetPrimaryCone())
-      
+
       local LastShootTime = self.Weapon:LastShootTime()
       scale = scale * (2 - math.Clamp( (CurTime() - LastShootTime) * 5, 0.0, 1.0 ))
-     
+
       local alphafactor = sights and sights_opacity:GetFloat() or 1
 
       -- somehow it seems this can be called before my player metatable
@@ -160,7 +160,7 @@ if CLIENT then
       else
          surface.SetDrawColor( 0, 255, 0, 255 * alphafactor)
       end
-      
+
       local gap = 20 * scale * (sights and 0.8 or 1)
       local length = gap + 20 * scale
       surface.DrawLine( x - length, y, x - gap, y )
@@ -199,7 +199,7 @@ if CLIENT then
       if secondary then
          help_spec.pos[2] = ScrH() - 60
          help_spec.text = primary
-         draw.TextShadow(help_spec, 2)         
+         draw.TextShadow(help_spec, 2)
       end
    end
 
@@ -233,16 +233,16 @@ function SWEP:PrimaryAttack(worldsnd)
    if not worldsnd then
       self.Weapon:EmitSound( self.Primary.Sound, self.Primary.SoundLevel )
    elseif SERVER then
-      WorldSound(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
+      sound.Play(self.Primary.Sound, self:GetPos(), self.Primary.SoundLevel)
    end
 
    self:ShootBullet( self.Primary.Damage, self.Primary.Recoil, self.Primary.NumShots, self:GetPrimaryCone() )
-   
+
    self:TakePrimaryAmmo( 1 )
 
-   local owner = self.Owner   
-   if not ValidEntity(owner) or owner:IsNPC() or (not owner.ViewPunch) then return end
-   
+   local owner = self.Owner
+   if not IsValid(owner) or owner:IsNPC() or (not owner.ViewPunch) then return end
+
    owner:ViewPunch( Angle( math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) *self.Primary.Recoil, 0 ) )
 end
 
@@ -313,13 +313,13 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
    end
 
    self.Owner:FireBullets( bullet )
-   
+
    -- Owner can die after firebullets
    if (not IsValid(self.Owner)) or (not self.Owner:Alive()) or self.Owner:IsNPC() then return end
-   
-   if ((SinglePlayer() and SERVER) or
-       ((not SinglePlayer()) and CLIENT and IsFirstTimePredicted())) then
-      
+
+   if ((game.SinglePlayer() and SERVER) or
+       ((not game.SinglePlayer()) and CLIENT and IsFirstTimePredicted())) then
+
       -- reduce recoil if ironsighting
       recoil = sights and (recoil * 0.6) or recoil
 
@@ -349,9 +349,9 @@ function SWEP:DrawWeaponSelection() end
 function SWEP:SecondaryAttack()
    if self.NoSights or (not self.IronSightsPos) then return end
    --if self:GetNextSecondaryFire() > CurTime() then return end
-   
+
    self:SetIronsights(not self:GetIronsights())
-   
+
    self:SetNextSecondaryFire(CurTime() + 0.3)
 end
 
@@ -372,27 +372,27 @@ function SWEP:OnRestore()
 end
 
 function SWEP:Ammo1()
-   return ValidEntity(self.Owner) and self.Owner:GetAmmoCount(self.Primary.Ammo) or false
+   return IsValid(self.Owner) and self.Owner:GetAmmoCount(self.Primary.Ammo) or false
 end
 
 function SWEP:OnDrop()
    self:SetRenderMode( RENDERMODE_NORMAL )
-   self:SetColor( 255, 255, 255, 255 )
+   self:SetColor( Color( 255, 255, 255, 255 ) )
 end
 
 -- The OnDrop() hook is useless for this as it happens AFTER the drop. OwnerChange
 -- does not occur when a drop happens for some reason. Hence this thing.
 function SWEP:PreDrop()
-   if SERVER and ValidEntity(self.Owner) and self.Primary.Ammo != "none" then
+   if SERVER and IsValid(self.Owner) and self.Primary.Ammo != "none" then
       local ammo = self:Ammo1()
 
       -- Do not drop ammo if we have another gun that uses this type
       for _, w in pairs(self.Owner:GetWeapons()) do
-         if ValidEntity(w) and w != self and w:GetPrimaryAmmoType() == self:GetPrimaryAmmoType() then
+         if IsValid(w) and w != self and w:GetPrimaryAmmoType() == self:GetPrimaryAmmoType() then
             ammo = 0
          end
       end
-      
+
       self.StoredAmmo = ammo
 
       if ammo > 0 then
@@ -427,18 +427,17 @@ function SWEP:Equip(newowner)
       end
    end
 
-   if ValidEntity(newowner) then
+   if SERVER and IsValid(newowner) and self.StoredAmmo > 0 and self.Primary.Ammo != "none" then
       if ( newowner:GetNWBool( "EV_Ghosted", false ) ) then
 		 self:SetRenderMode( RENDERMODE_NONE )
-		 self:SetColor( 255, 255, 255, 0 )
+		 self:SetColor( Color( 255, 255, 255, 0 ) )
 	  end
-      if SERVER and self.StoredAmmo > 0 and self.Primary.Ammo != "none" then
-         local ammo = newowner:GetAmmoCount(self.Primary.Ammo)
-         local given = math.min(self.StoredAmmo, self.Primary.ClipMax - ammo)
+	  
+      local ammo = newowner:GetAmmoCount(self.Primary.Ammo)
+      local given = math.min(self.StoredAmmo, self.Primary.ClipMax - ammo)
 
-         newowner:GiveAmmo( given, self.Primary.Ammo)
-         self.StoredAmmo = 0
-      end
+      newowner:GiveAmmo( given, self.Primary.Ammo)
+      self.StoredAmmo = 0
    end
 end
 
@@ -465,7 +464,7 @@ function SWEP:Initialize()
    end
 
    self:SetDeploySpeed(self.DeploySpeed)
-   
+
    -- compat for gmod update
    if self.SetWeaponHoldType then
       self:SetWeaponHoldType(self.HoldType or "pistol")
@@ -485,7 +484,7 @@ function SWEP:DyingShot()
       end
 
       -- Owner should still be alive here
-      if ValidEntity(self.Owner) then
+      if IsValid(self.Owner) then
          local punch = self.Primary.Recoil or 5
 
          -- Punch view to disorient aim before firing dying shot
@@ -516,37 +515,37 @@ function SWEP:GetViewModelPosition( pos, ang )
    if not self.IronSightsPos then return pos, ang end
 
    local bIron = self:GetIronsights()
-   
+
    if bIron != self.bLastIron then
-      self.bLastIron = bIron 
+      self.bLastIron = bIron
       self.fIronTime = CurTime()
-      
-      if bIron then 
+
+      if bIron then
          self.SwayScale = 0.3
          self.BobScale = 0.1
-      else 
+      else
          self.SwayScale = 1.0
          self.BobScale = 1.0
       end
-      
+
    end
-   
+
    local fIronTime = self.fIronTime or 0
-   if (not bIron) and fIronTime < CurTime() - IRONSIGHT_TIME then 
-      return pos, ang 
+   if (not bIron) and fIronTime < CurTime() - IRONSIGHT_TIME then
+      return pos, ang
    end
-   
+
    local mul = 1.0
-   
+
    if fIronTime > CurTime() - IRONSIGHT_TIME then
-      
+
       mul = math.Clamp( (CurTime() - fIronTime) / IRONSIGHT_TIME, 0, 1 )
-      
+
       if not bIron then mul = 1 - mul end
    end
 
    local offset = self.IronSightsPos + (ttt_lowered:GetBool() and LOWER_POS or vector_origin)
-   
+
    if self.IronSightsAng then
       ang = ang * 1
       ang:RotateAroundAxis( ang:Right(),    self.IronSightsAng.x * mul )

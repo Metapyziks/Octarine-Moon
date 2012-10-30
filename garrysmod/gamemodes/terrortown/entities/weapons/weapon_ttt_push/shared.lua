@@ -89,7 +89,7 @@ function SWEP:FirePulse(force_fwd, force_up)
 
    self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
-   WorldSound(self.Primary.Sound, self.Weapon:GetPos(), self.Primary.SoundLevel)
+   sound.Play(self.Primary.Sound, self.Weapon:GetPos(), self.Primary.SoundLevel)
 
    self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
 

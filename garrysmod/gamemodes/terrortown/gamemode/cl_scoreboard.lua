@@ -52,6 +52,10 @@ function GM:ScoreboardHide()
    end
 end
 
+function GM:GetScoreboardPanel()
+   return sboard_panel
+end
+
 function GM:HUDDrawScoreBoard()
    -- replaced by panel version
 end

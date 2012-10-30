@@ -63,14 +63,14 @@ function SWEP:PrimaryAttack()
    local tr = util.TraceHull({start=spos, endpos=sdest, filter=self.Owner, mask=MASK_SHOT_HULL, mins=kmins, maxs=kmaxs})
 
    -- Hull might hit environment stuff that line does not hit
-   if not ValidEntity(tr.Entity) then
+   if not IsValid(tr.Entity) then
       tr = util.TraceLine({start=spos, endpos=sdest, filter=self.Owner, mask=MASK_SHOT_HULL})
    end
 
    local hitEnt = tr.Entity
 
    -- effects
-   if ValidEntity(hitEnt) then
+   if IsValid(hitEnt) then
       self.Weapon:SendWeaponAnim( ACT_VM_HITCENTER )
 
       local edata = EffectData()
@@ -91,7 +91,7 @@ function SWEP:PrimaryAttack()
    end
 
 
-   if SERVER and tr.Hit and tr.HitNonWorld and ValidEntity(hitEnt) then
+   if SERVER and tr.Hit and tr.HitNonWorld and IsValid(hitEnt) then
       if hitEnt:IsPlayer() then
          -- knife damage is never karma'd, so don't need to take that into
          -- account we do want to avoid rounding error strangeness caused by
@@ -156,7 +156,7 @@ function SWEP:StabKill(tr, spos, sdest)
                          -- we might find a better location
                          local rtr = util.TraceLine({start=pos, endpos=pos + norm * 40, filter=ignore, mask=MASK_SHOT_HULL})
 
-                         if ValidEntity(rtr.Entity) and rtr.Entity == rag then
+                         if IsValid(rtr.Entity) and rtr.Entity == rag then
                             bone = rtr.PhysicsBone
                             pos = rtr.HitPos
                             ang = Angle(-28,0,0) + rtr.Normal:Angle()
@@ -206,7 +206,7 @@ function SWEP:SecondaryAttack()
       self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       local ang = ply:EyeAngles()
 
@@ -232,7 +232,7 @@ function SWEP:SecondaryAttack()
       knife_ang:RotateAroundAxis(knife_ang:Right(), -90)
 
       local knife = ents.Create("ttt_knife_proj")
-      if not ValidEntity(knife) then return end
+      if not IsValid(knife) then return end
       knife:SetPos(src)
       knife:SetAngles(knife_ang)
 
@@ -243,7 +243,7 @@ function SWEP:SecondaryAttack()
       knife:SetOwner(ply)
 
       local phys = knife:GetPhysicsObject()
-      if ValidEntity(phys) then
+      if IsValid(phys) then
          phys:SetVelocity(thr)
          phys:AddAngleVelocity(Vector(0, 1500, 0))
          phys:Wake()
@@ -264,7 +264,7 @@ function SWEP:PreDrop()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end

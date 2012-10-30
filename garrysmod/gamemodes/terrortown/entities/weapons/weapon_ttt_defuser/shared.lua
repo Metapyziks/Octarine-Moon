@@ -58,7 +58,7 @@ function SWEP:PrimaryAttack()
       if bomb:GetArmed() then
          if SERVER then
             bomb:Disarm(self.Owner)
-            WorldSound(defuse, bomb:GetPos())
+            sound.Play(defuse, bomb:GetPos())
          end
 
          self.Weapon:SetNextPrimaryFire( CurTime() + (self.Primary.Delay * 2) )

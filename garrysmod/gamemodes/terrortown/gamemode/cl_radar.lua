@@ -83,14 +83,14 @@ local function DrawTarget(tgt, size, offset, no_shrink)
          -- Show time
          text = string.FormattedTime(tgt.t - CurTime(), "%02i:%02i")
          w, h = surface.GetTextSize(text)
-         
+
          surface.SetTextPos(scrpos.x - w / 2, scrpos.y + sz / 2)
          surface.DrawText(text)
       elseif tgt.nick then
          -- Show nickname
          text = tgt.nick
          w, h = surface.GetTextSize(text)
-         
+
          surface.SetTextPos(scrpos.x - w / 2, scrpos.y + sz / 2)
          surface.DrawText(text)
       end
@@ -117,7 +117,7 @@ function RADAR:Draw(client)
       surface.SetTexture(c4warn)
       surface.SetTextColor(200, 55, 55, 220)
       surface.SetDrawColor(255, 255, 255, 200)
-      
+
       for k, bomb in pairs(self.bombs) do
          DrawTarget(bomb, 24, 0, true)
       end
@@ -237,8 +237,9 @@ local function ReceiveRadarScan(um)
 
    RADAR.enable = true
    RADAR.endtime = CurTime() + RADAR.duration
-   
-   timer.Create("radartimeout", RADAR.duration + 1, 1, RADAR.Timeout, RADAR)
+
+   timer.Create("radartimeout", RADAR.duration + 1, 1,
+                function() RADAR:Timeout() end)
 end
 usermessage.Hook("radar", ReceiveRadarScan)
 

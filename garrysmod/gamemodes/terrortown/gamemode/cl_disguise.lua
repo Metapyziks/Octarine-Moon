@@ -48,14 +48,4 @@ function DISGUISE.Draw(client)
    surface.DrawText(text)
 end
 
-
-local function DisguiseToggle(ply)
-   if IsValid(ply) and ply:IsActiveTraitor() then
-      if not ply:GetNWBool("disguised", false) then
-         RunConsoleCommand("ttt_set_disguise", "1")
-      else
-         RunConsoleCommand("ttt_set_disguise", "0")
-      end
-   end
-end
-concommand.Add("ttt_toggle_disguise", DisguiseToggle)
+concommand.Add("ttt_toggle_disguise", WEPS.DisguiseToggle)

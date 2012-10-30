@@ -78,7 +78,7 @@ function ENT:OnTakeDamage(dmginfo)
       local effect = EffectData()
       effect:SetOrigin(self:GetPos())
       util.Effect("cball_explode", effect)
-      WorldSound(zapsound, self:GetPos())
+      sound.Play(zapsound, self:GetPos())
 
       if IsValid(self:GetOwner()) then
          TraitorMsg(self:GetOwner(), "ONE OF YOUR BEACONS HAS BEEN DESTROYED!")
@@ -90,7 +90,7 @@ if SERVER then
    --local beep = Sound("weapons/c4/c4_beep1.wav")
    function ENT:Think()
       if SERVER then
-         --WorldSound(beep, self:GetPos(), 100, 80)
+         --sound.Play(beep, self:GetPos(), 100, 80)
       else
          local dlight = DynamicLight(self:EntIndex())
          if dlight then

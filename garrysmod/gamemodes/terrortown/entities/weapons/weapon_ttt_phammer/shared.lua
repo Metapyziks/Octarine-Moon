@@ -8,7 +8,7 @@ SWEP.HoldType			= "ar2"
 if CLIENT then
    SWEP.PrintName = "Poltergeist"
    SWEP.Slot = 7
-   
+
    SWEP.ViewModelFlip = false
    SWEP.ViewModelFOV = 54
 
@@ -56,7 +56,7 @@ local math = math
 -- Returns if an entity is a valid physhammer punching target. Does not take
 -- distance into account.
 local function ValidTarget(ent)
-   return ValidEntity(ent) and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject() and (not ent:IsWeapon()) and (not ent:GetNWBool("punched", false)) and (not ent:IsPlayer())
+   return IsValid(ent) and ent:GetMoveType() == MOVETYPE_VPHYSICS and ent:GetPhysicsObject() and (not ent:IsWeapon()) and (not ent:GetNWBool("punched", false)) and (not ent:IsPlayer())
    -- NOTE: cannot check for motion disabled on client
 end
 
@@ -68,9 +68,8 @@ local ghostmdl = Model("models/Items/combine_rifle_ammo01.mdl")
 function SWEP:Initialize()
    if CLIENT then
       -- create ghosted indicator
-      local ghost = ents.Create("prop_physics") --the only prop with a factory?
-      if ValidEntity(ghost) then
-         ghost:SetModel(ghostmdl)
+      local ghost = ents.CreateClientProp(ghostmdl)
+      if IsValid(ghost) then
          ghost:SetPos(self:GetPos())
          ghost:Spawn()
 
@@ -84,7 +83,7 @@ function SWEP:Initialize()
          ghost:SetRenderMode(RENDERMODE_TRANSCOLOR)
          ghost:AddEffects(EF_NOSHADOW)
          ghost:SetNoDraw(true)
-         
+
          self.Ghost = ghost
       end
    end
@@ -104,7 +103,7 @@ function SWEP:PreDrop()
 end
 
 function SWEP:HideGhost()
-   if ValidEntity(self.Ghost) then
+   if IsValid(self.Ghost) then
       self.Ghost:SetNoDraw(true)
    end
 end
@@ -117,10 +116,10 @@ function SWEP:PrimaryAttack()
       if self.IsCharging then return end
 
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       local tr = util.TraceLine({start=ply:GetShootPos(), endpos=ply:GetShootPos() + ply:GetAimVector() * maxrange, filter={ply, self.Entity}, mask=MASK_SOLID})
-      
+
       if tr.HitNonWorld and ValidTarget(tr.Entity) and tr.Entity:GetPhysicsObject():IsMoveable() then
 
          self:CreateHammer(tr.Entity, tr.HitPos)
@@ -128,7 +127,7 @@ function SWEP:PrimaryAttack()
          self.Weapon:EmitSound(self.Primary.Sound)
 
          self:TakePrimaryAmmo(1)
-         
+
          self.Weapon:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
       end
    end
@@ -143,12 +142,12 @@ function SWEP:SecondaryAttack()
 
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       local range = 30000
 
       local tr = util.TraceLine({start=ply:GetShootPos(), endpos=ply:GetShootPos() + ply:GetAimVector() * range, filter={ply, self.Entity}, mask=MASK_SOLID})
-      
+
       if tr.HitNonWorld and ValidTarget(tr.Entity) and tr.Entity:GetPhysicsObject():IsMoveable() then
 
          if self.IsCharging and self:GetCharge() >= 1 then
@@ -162,7 +161,7 @@ end
 
 function SWEP:CreateHammer(tgt, pos)
    local hammer = ents.Create("ttt_physhammer")
-   if ValidEntity(hammer) then
+   if IsValid(hammer) then
       local ang = self.Owner:GetAimVector():Angle()
       ang:RotateAroundAxis(ang:Right(), 90)
 
@@ -180,7 +179,7 @@ function SWEP:CreateHammer(tgt, pos)
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Ghost) then
+   if CLIENT and IsValid(self.Ghost) then
       self.Ghost:Remove()
    end
 
@@ -189,7 +188,7 @@ function SWEP:OnRemove()
 end
 
 function SWEP:Holster()
-   if CLIENT and ValidEntity(self.Ghost) then
+   if CLIENT and IsValid(self.Ghost) then
       self.Ghost:SetNoDraw(true)
    end
 
@@ -218,7 +217,7 @@ if SERVER then
                self.Weapon:EmitSound(self.Primary.Sound)
 
                self:TakePrimaryAmmo(1)
-               
+
                self.Weapon:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 
                self.IsCharging = false
@@ -246,14 +245,14 @@ if SERVER then
 end
 
 local function around( val )
-   return math.Round( val * (10 ^ 6) ) / (10 ^ 6);
+   return math.Round( val * (10 ^ 3) ) / (10 ^ 3);
 end
 
 if CLIENT then
    local surface = surface
 
    function SWEP:UpdateGhost(pos, c, a)
-      if ValidEntity(self.Ghost) then
+      if IsValid(self.Ghost) then
          if self.Ghost:GetPos() != pos then
             self.Ghost:SetPos(pos)
             local ang = LocalPlayer():GetAimVector():Angle()
@@ -261,8 +260,8 @@ if CLIENT then
 
             self.Ghost:SetAngles(ang)
 
-            self.Ghost:SetColor(c.r, c.g, c.b, a)
-            
+            self.Ghost:SetColor(Color(c.r, c.g, c.b, a))
+
             self.Ghost:SetNoDraw(false)
          end
       end
@@ -274,7 +273,7 @@ if CLIENT then
    function SWEP:ViewModelDrawn()
       local client = LocalPlayer()
       local vm = client:GetViewModel()
-      if not ValidEntity(vm) then return end
+      if not IsValid(vm) then return end
 
       local plytr = client:GetEyeTrace(MASK_SHOT)
 
@@ -298,7 +297,7 @@ if CLIENT then
             end
          end
       end
-      
+
       self:UpdateGhost(plytr.HitPos, c, a)
 
       render.SetMaterial(laser)
@@ -332,7 +331,7 @@ if CLIENT then
       surface.SetTextColor(255,255,255,15)
       surface.SetFont("Default")
       surface.SetTextPos(2,0)
-      surface.DrawText(string.format("%f", around(frac)))
+      surface.DrawText(string.format("%.3f", around(frac)))
 
       surface.SetDrawColor(0,0,0, 80)
       surface.DrawRect(linex, 1, 3, 13)

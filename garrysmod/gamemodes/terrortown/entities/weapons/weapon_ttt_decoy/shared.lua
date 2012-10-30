@@ -71,7 +71,7 @@ local throwsound = Sound( "Weapon_SLAM.SatchelThrow" )
 function SWEP:DecoyDrop()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -82,7 +82,7 @@ function SWEP:DecoyDrop()
       local vthrow = vvel + vang * 200
 
       local decoy = ents.Create("ttt_decoy")
-      if ValidEntity(decoy) then
+      if IsValid(decoy) then
          decoy:SetPos(vsrc + vang * 10)
          decoy:SetOwner(ply)
          decoy:Spawn()
@@ -95,7 +95,7 @@ function SWEP:DecoyDrop()
 
          decoy:PhysWake()
          local phys = decoy:GetPhysicsObject()
-         if ValidEntity(phys) then
+         if IsValid(phys) then
             phys:SetVelocity(vthrow)
          end   
 
@@ -109,7 +109,7 @@ end
 function SWEP:DecoyStick()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -120,7 +120,7 @@ function SWEP:DecoyStick()
 
       if tr.HitWorld then
          local decoy = ents.Create("ttt_decoy")
-         if ValidEntity(decoy) then
+         if IsValid(decoy) then
             decoy:PointAtEntity(ply)
 
             local tr_ent = util.TraceEntity({start=spos, endpos=epos, filter=ignore, mask=MASK_SOLID}, decoy)
@@ -135,7 +135,7 @@ function SWEP:DecoyStick()
                decoy:Spawn()
                
                local phys = decoy:GetPhysicsObject()
-               if ValidEntity(phys) then
+               if IsValid(phys) then
                   phys:EnableMotion(false)
                end
 
@@ -165,7 +165,7 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end

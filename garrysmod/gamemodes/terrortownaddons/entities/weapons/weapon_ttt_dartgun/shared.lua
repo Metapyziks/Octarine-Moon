@@ -82,9 +82,9 @@ function SWEP:PoisonPlayer( ply, duration )
 
 	ply.Poisoned = true
 	ply.DartShotOwner = self.Owner
-	timer.Create( "PoisonEffect_" .. ply:Nick(), 0.6, 0, self.PoisonEffects, self, ply )
-	timer.Create( "PoisonEnd_" .. ply:Nick(), duration, 1, self.CurePlayer, self, ply )
-	ply:SetColor( 128, 255, 160, 255 )
+	timer.Create( "PoisonEffect_" .. ply:Nick(), 0.6, 0, function() self:PoisonEffects( ply ) end )
+	timer.Create( "PoisonEnd_" .. ply:Nick(), duration, 1, function() self:CurePlayer( ply ) end )
+	ply:SetColor( Color( 128, 255, 160, 255 ) )
 end
 
 function SWEP:CurePlayer( ply )
@@ -95,10 +95,10 @@ function SWEP:CurePlayer( ply )
 	ply.Poisoned = false
 	ply.DartShotOwner = nil
 	ply:SetColor( 255, 255, 255, 255 )
-	if( timer.IsTimer( "PoisonEffect_" .. ply:Nick())) then
+	if( timer.Exists( "PoisonEffect_" .. ply:Nick())) then
 		timer.Destroy( "PoisonEffect_" .. ply:Nick())
 	end
-	if( timer.IsTimer( "PoisonEnd_" .. ply:Nick())) then
+	if( timer.Exists( "PoisonEnd_" .. ply:Nick())) then
 		timer.Destroy( "PoisonEnd_" .. ply:Nick())
 	end
 end
@@ -122,7 +122,7 @@ function SWEP:PoisonEffects( ply )
 			
 			ply:TakeDamageInfo( dmginfo )
 			
-			if( not ply:IsAlive()) then
+			if( not ply:Alive()) then
 				self:CurePlayer( ply )
 			end
 		end
@@ -191,7 +191,7 @@ function SWEP:PrimaryAttack()
 	self:TakePrimaryAmmo( 1 )
 
 	local owner = self.Owner   
-	if not ValidEntity(owner) or owner:IsNPC() or (not owner.ViewPunch) then return end
+	if not IsValid( owner ) or owner:IsNPC() or (not owner.ViewPunch) then return end
 
 	owner:ViewPunch( Angle( math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) *self.Primary.Recoil, 0 ) )
 

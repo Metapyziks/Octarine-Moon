@@ -11,3 +11,21 @@ end
 function WEPS.IsEquipment(wep)
    return wep.Kind and wep.Kind >= WEAPON_EQUIP
 end
+
+function WEPS.GetClass(wep)
+   if type(wep) == "table" then
+      return wep.ClassName or wep.Classname
+   elseif IsValid(wep) then
+      return wep:GetClass()
+   end
+end
+
+function WEPS.DisguiseToggle(ply)
+   if IsValid(ply) and ply:IsActiveTraitor() then
+      if not ply:GetNWBool("disguised", false) then
+         RunConsoleCommand("ttt_set_disguise", "1")
+      else
+         RunConsoleCommand("ttt_set_disguise", "0")
+      end
+   end
+end

@@ -143,7 +143,7 @@ function IgniteTarget(att, path, dmginfo)
 
       if ent:IsPlayer() then
          timer.Simple(dur + 0.1, function()
-                                    if ValidEntity(ent) then
+                                    if IsValid(ent) then
                                        ent.ignite_info = nil
                                     end
                                  end)
@@ -159,7 +159,9 @@ function IgniteTarget(att, path, dmginfo)
          timer.Create(tname,
                       0.1,
                       math.ceil(1 + burn_time / 0.1), -- upper limit, failsafe
-                      RunIgniteTimer, ent, tname)     -- timer arg for Destroy()
+                      function()
+                         RunIgniteTimer(ent, tname)
+                      end)
       end
    end
 end
@@ -176,7 +178,7 @@ function SWEP:ShootFlare()
    bullet.Damage    = self.Primary.Damage
    bullet.TracerName = self.Tracer
    bullet.Callback = IgniteTarget
-   
+
    self.Owner:FireBullets( bullet )
 end
 
@@ -193,13 +195,13 @@ function SWEP:PrimaryAttack()
 
    self:TakePrimaryAmmo( 1 )
 
-   if ValidEntity(self.Owner) then
+   if IsValid(self.Owner) then
       self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
       self.Owner:ViewPunch( Angle( math.Rand(-0.2,-0.1) * self.Primary.Recoil, math.Rand(-0.1,0.1) *self.Primary.Recoil, 0 ) )
    end
 
-   if ( (SinglePlayer() && SERVER) || CLIENT ) then
+   if ( (game.SinglePlayer() && SERVER) || CLIENT ) then
       self.Weapon:SetNetworkedFloat( "LastShootTime", CurTime() )
    end
 end

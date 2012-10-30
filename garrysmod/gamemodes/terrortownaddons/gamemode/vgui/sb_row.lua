@@ -3,6 +3,9 @@
 
 include("sb_info.lua")
 
+function ValidEntity( ent )
+	return ent and ent:IsValid()
+end
 
 local GetTranslation = LANG.GetTranslation
 local GetPTranslation = LANG.GetParamTranslation

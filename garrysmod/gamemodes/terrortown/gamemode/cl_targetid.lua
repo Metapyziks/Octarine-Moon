@@ -32,9 +32,6 @@ local indicator_col = Color(255, 255, 255, 130)
 local client, plys, ply, pos, dir, tgt
 local GetPlayers = player.GetAll
 
-local scale_increase = Vector(1.05, 1.05, 1.05)
-local scale_normal = Vector(1,1,1)
-
 local propspec_outline = Material("models/props_combine/portalball001_sheet")
 
 -- using this hook instead of pre/postplayerdraw because playerdraw seems to
@@ -67,19 +64,16 @@ function GM:PostDrawTranslucentRenderables()
          ply = plys[i]
          tgt = ply:GetObserverTarget()
          if IsValid(tgt) and tgt:GetNWEntity("spec_owner", nil) == ply then
-            SetMaterialOverride(propspec_outline)
+            render.MaterialOverride(propspec_outline)
             render.SuppressEngineLighting(true)
             render.SetColorModulation(1, 0.5, 0)
 
-            tgt:SetModelScale(scale_increase)
+            tgt:SetModelScale(1.05, 0)
             tgt:DrawModel()
 
             render.SetColorModulation(1, 1, 1)
             render.SuppressEngineLighting(false)
-            SetMaterialOverride(nil)
-
-            tgt:SetModelScale(scale_normal)
-            tgt:DrawModel()
+            render.MaterialOverride(nil)
          end
       end
 
@@ -133,11 +127,13 @@ end
 
 ---- Crosshair affairs
 
-surface.CreateFont("TargetID", 16, 1000, true, false, "TargetIDSmall2")
+surface.CreateFont("TargetIDSmall2", {font = "TargetID",
+                                      size = 16,
+                                      weight = 1000})
 
 local minimalist = CreateConVar("ttt_minimal_targetid", "0", FCVAR_ARCHIVE)
 
-local magnifier = surface.GetTextureID("gui/silkicons/magnifier")
+local magnifier_mat = Material("icon16/magnifier.png")
 local ring_tex = surface.GetTextureID("effects/select_ring")
 
 local rag_color = Color(200,200,200,255)
@@ -253,9 +249,9 @@ function GM:HUDDrawTargetID()
       if ent.search_result and client:IsDetective() then
          -- if I am detective and I know a search result for this corpse, then I
          -- have searched it or another detective has
-         surface.SetTexture(magnifier)
+         surface.SetMaterial(magnifier_mat)
          surface.SetDrawColor(200, 200, 255, 255)
-         surface.DrawTexturedRect(x + w + 5, y + 4, 16, 16)
+         surface.DrawTexturedRect(x + w + 5, y, 16, 16)
       end
 
       y = y + h + 4

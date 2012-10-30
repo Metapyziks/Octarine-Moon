@@ -144,10 +144,10 @@ function RADIO:ShowRadioCommands(state)
       end
    else
       local client = LocalPlayer()
-      if not ValidEntity(client) then return end
+      if not IsValid(client) then return end
 
       if not radioframe then
-         
+
          local w, h = 200, 300
 
          radioframe = vgui.Create("DForm")
@@ -160,10 +160,11 @@ function RADIO:ShowRadioCommands(state)
 
          -- ASS
          radioframe.ForceResize = function(s)
-                                     local w = 0
+                                     local w, label = 0, nil
                                      for k,v in pairs(s.Items) do
-                                        if v.Left:GetWide() > w then
-                                           w = v.Left:GetWide()
+                                        label = v:GetChild(0)
+                                        if label:GetWide() > w then
+                                           w = label:GetWide()
                                         end
                                      end
                                      s:SetWide(w + 20)
@@ -181,6 +182,7 @@ function RADIO:ShowRadioCommands(state)
 
             dlabel:SetText(txt)
             dlabel:SetFont("TabLarge")
+            dlabel:SetTextColor(COLOR_WHITE)
             dlabel:SizeToContents()
 
             if command.format then
@@ -219,7 +221,8 @@ function RADIO:ShowRadioCommands(state)
       -- capture slot keys while we're open
       self.Show = true
 
-      timer.Create("radiocmdshow", 3, 1, RADIO.ShowRadioCommands, self, false)
+      timer.Create("radiocmdshow", 3, 1,
+                   function() RADIO:ShowRadioCommands(false) end)
    end
 end
 
@@ -233,9 +236,9 @@ function RADIO:SendCommand(slotidx)
 end
 
 function RADIO:GetTargetType()
-   if not ValidEntity(LocalPlayer()) then return end
+   if not IsValid(LocalPlayer()) then return end
    local trace = LocalPlayer():GetEyeTrace(MASK_SHOT)
-  
+
    if not trace or (not trace.Hit) or (not IsValid(trace.Entity)) then return end
 
    local ent = trace.Entity
@@ -271,7 +274,7 @@ end
 
 function RADIO:GetTarget()
    local client = LocalPlayer()
-   if ValidEntity(client) then
+   if IsValid(client) then
 
       local current, vague = self:GetTargetType()
       if current then return current, vague end
@@ -296,7 +299,7 @@ end
 -- Radio commands are a console cmd instead of directly sent from RADIO, because
 -- this way players can bind keys to them
 local function RadioCommand(ply, cmd, arg)
-   if not ValidEntity(ply) or #arg != 1 then 
+   if not IsValid(ply) or #arg != 1 then
       print("ttt_radio failed, too many arguments?")
       return
    end
@@ -413,20 +416,6 @@ local MutedState = nil
 
 g_VoicePanelList = nil
 
-local voicepos = CreateConVar("ttt_voicechat_topleft", "1", FCVAR_ARCHIVE)
-
--- Because users may change the voice position setting at any time, we
--- reposition this whenever someone new speaks, so that it remains up to date.
-local function PositionVoicePanelList()
-   if voicepos:GetBool() then
-      g_VoicePanelList:SetPos(25, 25)
-      g_VoicePanelList:SetBottomUp(false)
-   else
-      g_VoicePanelList:SetPos(ScrW() - 250, 100)
-      g_VoicePanelList:SetBottomUp(true)
-   end
-end
-
 -- 255 at 100
 -- 5 at 5000
 local function VoiceNotifyThink(pnl)
@@ -442,7 +431,7 @@ local PlayerVoicePanels = {}
 function GM:PlayerStartVoice( ply )
    local client = LocalPlayer()
    if not IsValid(g_VoicePanelList) or not IsValid(client) then return end
-   
+
    -- There'd be an extra one if voice_loopback is on, so remove it.
    GAMEMODE:PlayerEndVoice(ply, true)
 
@@ -463,8 +452,16 @@ function GM:PlayerStartVoice( ply )
       VOICE.SetSpeaking(true)
    end
 
-   local pnl = vgui.Create("VoiceNotify")
+   local pnl = g_VoicePanelList:Add("VoiceNotify")
    pnl:Setup(ply)
+   pnl:Dock(TOP)
+
+   local shade = Color(0, 0, 0, 150)
+   pnl.Paint = function(s, w, h)
+                  if not IsValid(s.ply) then return end
+                  draw.RoundedBox(4, 0, 0, w, h, s.Color)
+                  draw.RoundedBox(4, 1, 1, w-2, h-2, shade)
+               end
 
    if GetGlobalBool("ttt_locational_voice", false) and (not ply:IsSpec()) and (ply != client) then
       pnl.Player = ply
@@ -474,11 +471,11 @@ function GM:PlayerStartVoice( ply )
    if client:IsActiveTraitor() then
       if ply == client then
          if not client.traitor_gvoice then
-            pnl.Color = Color(210, 0, 0, 255)
+            pnl.Color = Color(200, 20, 20, 255)
          end
       elseif ply:IsActiveTraitor() then
          if not ply.traitor_gvoice then
-            pnl.Color = Color(200, 0, 0, 255)
+            pnl.Color = Color(200, 20, 20, 255)
 
             -- unhook locational fade think
             pnl.Think = nil
@@ -487,12 +484,9 @@ function GM:PlayerStartVoice( ply )
    end
 
    if ply:IsActiveDetective() then
-      pnl.Color = Color(0, 0, 200, 255)
+      pnl.Color = Color(20, 20, 200, 255)
    end
-   
-   PositionVoicePanelList()
-   g_VoicePanelList:AddItem( pnl )
-   
+
    PlayerVoicePanels[ply] = pnl
 
    -- run ear gesture
@@ -507,10 +501,10 @@ local function ReceiveVoiceState(um)
 
    -- prevent glitching due to chat starting/ending across round boundary
    if GAMEMODE.round_state != ROUND_ACTIVE then return end
-   if (not ValidEntity(LocalPlayer())) or (not LocalPlayer():IsActiveTraitor()) then return end
+   if (not IsValid(LocalPlayer())) or (not LocalPlayer():IsActiveTraitor()) then return end
 
    local ply = player.GetByID(idx)
-   if ValidEntity(ply) then
+   if IsValid(ply) then
       ply.traitor_gvoice = state
 
       if IsValid(PlayerVoicePanels[ply]) then
@@ -532,7 +526,6 @@ timer.Create( "VoiceClean", 10, 0, VoiceClean )
 
 function GM:PlayerEndVoice(ply, no_reset)
    if IsValid( PlayerVoicePanels[ply] ) then
-      g_VoicePanelList:RemoveItem( PlayerVoicePanels[ply] )
       PlayerVoicePanels[ply]:Remove()
       PlayerVoicePanels[ply] = nil
    end
@@ -547,20 +540,17 @@ function GM:PlayerEndVoice(ply, no_reset)
 end
 
 local function CreateVoiceVGUI()
-    g_VoicePanelList = vgui.Create( "DPanelList" )
+    g_VoicePanelList = vgui.Create( "DPanel" )
 
     g_VoicePanelList:ParentToHUD()
-
-    PositionVoicePanelList()
-
-    g_VoicePanelList:SetSize( 200, ScrH() - 200 )
-    g_VoicePanelList:SetDrawBackground( false )
-    g_VoicePanelList:SetSpacing( 8 )
+    g_VoicePanelList:SetPos(25, 25)
+    g_VoicePanelList:SetSize(200, ScrH() - 200)
+    g_VoicePanelList:SetDrawBackground(false)
 
     MutedState = vgui.Create("DLabel")
     MutedState:SetPos(ScrW() - 200, ScrH() - 50)
     MutedState:SetSize(200, 50)
-    MutedState:SetFont("Trebuchet19")
+    MutedState:SetFont("Trebuchet18")
     MutedState:SetText("")
     MutedState:SetTextColor(Color(240, 240, 240, 250))
     MutedState:SetVisible(false)
@@ -608,7 +598,6 @@ local function GetRechargeRate()
    if LocalPlayer().voice_battery < battery_min then
       r = r / 2
    end
-
    return r
 end
 
@@ -636,8 +625,6 @@ function VOICE.Tick()
    local client = LocalPlayer()
    if VOICE.IsSpeaking() and (not IsTraitorChatting(client)) then
       client.voice_battery = client.voice_battery - GetDrainRate()
-
-      --print("speaking", client.voice_battery)
 
       if not VOICE.CanSpeak() then
          client.voice_battery = 0

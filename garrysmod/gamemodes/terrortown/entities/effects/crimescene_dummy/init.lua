@@ -6,7 +6,7 @@ function EFFECT:Init(data)
 
    self:SetPos(data:GetOrigin())
 
-   local ang = data:GetAngle()
+   local ang = data:GetAngles()
    -- pitch is done via aim_pitch, and roll shouldn't happen
    ang.r = 0
    ang.p = 0
@@ -14,9 +14,9 @@ function EFFECT:Init(data)
 
    self:SetRenderBounds(Vector(-18, -18, 0), Vector(18, 18, 64))
 
-   self.Sequence = data:GetRadius()
-   self.Cycle    = data:GetMagnitude()
-   self.Duration = data:GetScale() or 0
+   self.Sequence = data:GetColor()
+   self.Cycle    = data:GetScale()
+   self.Duration = data:GetRadius() or 0
    self.EndTime  = CurTime() + self.Duration
 
    self.FadeTime = 2
@@ -63,21 +63,18 @@ function EFFECT:Think()
    return IsValid(self.Dummy)
 end
 
---local mat_dummy = Material("models/debug/debug_white")
---local clr = COLOR_GREEN
 function EFFECT:Render()
-   --SetMaterialOverride(mat_dummy)
    render.SuppressEngineLighting( true )
    render.SetColorModulation(0.4, 0.4, 1)
    render.SetBlend(0.8 * self.Alpha)
 
    if self.Dummy then
+      --self.Dummy:ClearPoseParameters()
       self.Dummy:DrawModel()
    end
 
    render.SetBlend(1)
    render.SetColorModulation(1, 1, 1)
    render.SuppressEngineLighting(false)
-   --SetMaterialOverride()
 end
 

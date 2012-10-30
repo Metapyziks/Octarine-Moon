@@ -15,7 +15,7 @@ ENT.TargetAng = Angle(0,0,0)
 ENT.Owner = nil
 
 function ENT:Initialize()
-   if SERVER and ValidEntity(self.Carried) then
+   if SERVER and IsValid(self.Carried) then
       
 --      self.Entity:SetModel("models/weapons/w_bugbait.mdl")
       self.Entity:SetModel(self.Carried:GetModel())
@@ -35,18 +35,18 @@ function ENT:Initialize()
 
 --   local ply = self:GetOwner()
 --   self.Owner = ply
---   if ValidEntity(ply) then
+--   if IsValid(ply) then
 --      self.TargetPos = ply:GetShootPos() + (ply:GetAimVector() * 70)
 --      self.TargetAng = ply:GetAimVector()
 --   end
 
 
-   if SERVER and ValidEntity(self.Carried) then
+   if SERVER and IsValid(self.Carried) then
 
       local phys = self:GetPhysicsObject()
       local carphys = self.Carried:GetPhysicsObject()
 
-      if ValidEntity(phys) and ValidEntity(carphys) then
+      if IsValid(phys) and IsValid(carphys) then
          phys:Wake()
          carphys:Wake()
 
@@ -72,7 +72,7 @@ function ENT:Initialize()
 end
 
 function ENT:OnRemove()
-   if ValidEntity(self.Carried) then
+   if IsValid(self.Carried) then
       self.Carried:SetGravity(true)
       self.Carried:SetOwner(nil)
 --      self.Carried:SetNoDraw(false)
@@ -80,7 +80,7 @@ function ENT:OnRemove()
       self.Carried:SetMoveType(MOVETYPE_VPHYSICS)
       
       local carphys = self.Carried:GetPhysicsObject()
-      if ValidEntity(carphys) then
+      if IsValid(carphys) then
          carphys:SetDamping(0,0)
       end
 
@@ -97,7 +97,7 @@ end
 --
 --   local obj = self.Carried
 --   local ply = self:GetOwner()
---   if not ValidEntity(obj) or not ValidEntity(ply) or not ply:Alive() then
+--   if not IsValid(obj) or not IsValid(ply) or not ply:Alive() then
 --      self:Remove()
 --      return
 --   end
@@ -117,7 +117,7 @@ end
 --
 --   local phys = self.Entity:GetPhysicsObject()
 --   local carryphys = obj:GetPhysicsObject()
---   if ValidEntity(phys) and ValidEntity(carryphys) then
+--   if IsValid(phys) and IsValid(carryphys) then
 --      if phys:IsPenetrating() then
 --         self:Remove()
 --         return

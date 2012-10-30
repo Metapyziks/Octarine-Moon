@@ -107,7 +107,7 @@ end
 -- Exposed because it's also done at BeginRound
 function ents.TTT.RemoveRagdolls(player_only)
    for k, ent in pairs(ents.FindByClass("prop_ragdoll")) do
-      if ValidEntity(ent) then
+      if IsValid(ent) then
          if not player_only and string.find(ent:GetModel(), "zm_", 6, true) then
             ent:Remove()
          elseif ent.player_ragdoll then
@@ -277,7 +277,7 @@ function ents.TTT.GetSpawnableAmmo()
 end
 
 local function PlaceWeapon(swep, pos, ang)
-   local cls = swep and swep.Classname
+   local cls = swep and WEPS.GetClass(swep)
    if not cls then return end
 
    -- Create the weapon, somewhat in the air in case the spot hugs the ground.
@@ -317,7 +317,7 @@ local function PlaceWeaponsAtEnts(spots_classes)
 
    local spawnables = ents.TTT.GetSpawnableSWEPs()
 
-   local max = math.max(server_settings.Int("maxplayers", 16), #player.GetAll())
+   local max = math.max(cvars.Number("maxplayers", 16), #player.GetAll())
    max = max + math.max(3, 0.33 * max)
 
    local num = 0
@@ -442,7 +442,8 @@ local function RemoveWeaponEntities()
    end
 
    for _, sw in pairs(ents.TTT.GetSpawnableSWEPs()) do
-      for k, ent in pairs(ents.FindByClass(sw.Classname)) do
+      local cn = WEPS.GetClass(sw)
+      for k, ent in pairs(ents.FindByClass(cn)) do
          ent:Remove()
       end
    end
@@ -482,14 +483,14 @@ function ents.TTT.CanImportEntities(map)
 
    local fname = "maps/" .. map .. "_ttt.txt"
 
-   return file.Exists(fname, true)
+   return file.Exists(fname, "GAME")
 end
 
 local function ImportSettings(map)
    if not ents.TTT.CanImportEntities(map) then return end
 
    local fname = "maps/" .. map .. "_ttt.txt"
-   local buf = file.Read(fname, true)
+   local buf = file.Read(fname, "GAME")
 
    local settings = {}
 
@@ -519,11 +520,11 @@ local function ImportEntities(map)
 
    local fname = "maps/" .. map .. "_ttt.txt"
 
-   local buf = file.Read(fname, true)
+   local buf = file.Read(fname, "GAME")
    local lines = string.Explode("\n", buf)
    local num = 0
    for k, line in ipairs(lines) do
-      if (not string.match(line, "^#")) and (not string.match(line, "^setting")) and line != "" then
+      if (not string.match(line, "^#")) and (not string.match(line, "^setting")) and line != "" and string.byte(line) != 0 then
          local data = string.Explode("\t", line)
 
          local fail = true -- pessimism

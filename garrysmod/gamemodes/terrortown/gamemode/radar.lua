@@ -22,7 +22,7 @@ local function RadarScan(ply, cmd, args)
 
          local targets = {}
          for k, p in pairs(scan_ents) do
-            if ply == p or (not ValidEntity(p)) then continue end
+            if ply == p or (not IsValid(p)) then continue end
 
             if p:IsPlayer() then
                if not p:IsTerror() then continue end

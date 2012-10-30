@@ -132,8 +132,8 @@ local function TeleportPlayer(ply, teleport)
                                    end
                                 end)
 
-   WorldSound(zap, oldpos, 65, 100)
-   WorldSound(unzap, pos, 55, 100)
+   sound.Play(zap, oldpos, 65, 100)
+   sound.Play(unzap, pos, 55, 100)
 
    -- print decal on source now that we're gone, because else it will refuse
    -- to draw for some reason
@@ -238,14 +238,14 @@ local function StartTeleport(ply, teleport)
 
    teleport.ang = ply:EyeAngles()
 
-   timer.Simple(delay_beamup, DoTeleport, ply, teleport)
+   timer.Simple(delay_beamup, function() DoTeleport(ply, teleport) end)
 
    local ang = ply:GetAngles()
 
    local edata_up = EffectData()
    edata_up:SetOrigin(ply:GetPos())
    ang = Angle(0, ang.y, ang.r) -- deep copy
-   edata_up:SetAngle(ang)
+   edata_up:SetAngles(ang)
    edata_up:SetEntity(ply)
    edata_up:SetMagnitude(delay_beamup)
    edata_up:SetRadius(delay_beamdown)
@@ -255,7 +255,7 @@ local function StartTeleport(ply, teleport)
    local edata_dn = EffectData()
    edata_up:SetOrigin(teleport.pos)
    ang = Angle(0, ang.y, ang.r) -- deep copy
-   edata_up:SetAngle(ang)
+   edata_up:SetAngles(ang)
    edata_up:SetEntity(ply)
    edata_up:SetMagnitude(delay_beamup)
    edata_up:SetRadius(delay_beamdown)
@@ -265,12 +265,12 @@ end
 
 function SWEP:TeleportRecall(ply)
    local ply = self.Owner
-   if ValidEntity(ply) and ply:IsTerror() then
+   if IsValid(ply) and ply:IsTerror() then
       local mark = self:GetTeleportMark()
       if mark then
-         
+
          local g = ply:GetGroundEntity()
-         if g != GetWorldEntity() and not IsValid(g) then
+         if g != game.GetWorld() and not IsValid(g) then
             LANG.Msg(ply, "tele_no_ground")
             return
          end
@@ -284,7 +284,7 @@ function SWEP:TeleportRecall(ply)
 
          self:TakePrimaryAmmo(1)
 
-         timer.Simple(0.2, StartTeleport, ply, mark)
+         timer.Simple(0.2, function() StartTeleport(ply, mark) end)
       else
          LANG.Msg(ply, "tele_no_mark")
       end
@@ -293,7 +293,7 @@ end
 
 local function CanStoreTeleportPos(ply, pos)
    local g = ply:GetGroundEntity()
-   if g != GetWorldEntity() or (IsValid(g) and g:GetMoveType() != MOVETYPE_NONE) then
+   if g != game.GetWorld() or (IsValid(g) and g:GetMoveType() != MOVETYPE_NONE) then
       return false, "tele_no_mark_ground"
    elseif ply:Crouching() then
       return false, "tele_no_mark_crouch"
@@ -304,7 +304,7 @@ end
 
 function SWEP:TeleportStore()
    local ply = self.Owner
-   if ValidEntity(ply) and ply:IsTerror() then
+   if IsValid(ply) and ply:IsTerror() then
 
       local allow, msg = CanStoreTeleportPos(ply, self:GetPos())
       if not allow then
@@ -315,7 +315,7 @@ function SWEP:TeleportStore()
       self:SetTeleportMark(ply:GetPos(), ply:EyeAngles())
 
       LANG.Msg(ply, "tele_marked")
-   end   
+   end
 end
 
 

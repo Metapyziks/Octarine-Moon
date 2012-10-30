@@ -85,10 +85,9 @@ L.equip_stock_ok   = "This item is in stock."
 
 L.equip_custom     = "Custom item added by this server."
 
-L.equip_spec_title = "Item specifications"
-L.equip_spec_name  = "Name:"
-L.equip_spec_type  = "Type:"
-L.equip_spec_desc  = "Description:"
+L.equip_spec_name  = "Name"
+L.equip_spec_type  = "Type"
+L.equip_spec_desc  = "Description"
 
 L.equip_confirm    = "Buy equipment"
 
@@ -243,25 +242,18 @@ L.help_title = "Help and Settings"
 L.help_tut     = "Tutorial"
 L.help_tut_tip = "How TTT works, in 6 steps"
 
-L.help_fretta_tip = "Vote to change map or gamemode"
-
 L.help_settings = "Settings"
 L.help_settings_tip = "Client-side settings"
-
--- Fretta
-L.help_vote     = "Vote for change"
-L.help_vote_tip = "When sufficient people have voted for change, the server will either start a map vote or a gamemode vote, depending on its configuration."
 
 -- Settings
 L.set_title_gui = "Interface settings"
 
 L.set_tips      = "Show gameplay tips at the bottom of the screen while spectating"
-L.set_voice     = "Show voicechat indicators in the top-left of the screen"
 
 L.set_startpopup = "Start of round info popup duration"
 L.set_startpopup_tip = "When the round starts, a small popup appears at the bottom of your screen for a few seconds. Change the time it displays for here."
 
-L.set_cross_opacity = "Crosshair opacity while using ironsights"
+L.set_cross_opacity = "Ironsight crosshair opacity"
 L.set_cross_disable = "Disable crosshair completely"
 L.set_minimal_id    = "Minimalist Target ID under crosshair (no karma text, hints, etc)"
 L.set_healthlabel   = "Show health status label on health bar"
@@ -1041,10 +1033,10 @@ L.aw_fnd2_title = "Gotta Catch Em All"
 L.aw_fnd2_text  = "found {num} corpses for his collection."
 
 L.aw_fnd3_title = "Death Scent"
-L.aw_fnd3_text  = "keeps stumbling on random corpses, {num} times this round." 
+L.aw_fnd3_text  = "keeps stumbling on random corpses, {num} times this round."
 
 L.aw_crd1_title = "Recycler"
-L.aw_crd1_text  = "scrounged up {num} leftover credits from corpses." 
+L.aw_crd1_text  = "scrounged up {num} leftover credits from corpses."
 
 L.aw_tod1_title = "Pyrrhic Victory"
 L.aw_tod1_text  = "died only seconds before his team won the round."
@@ -1058,8 +1050,6 @@ L.aw_tod2_text  = "died right after the start of the round."
 
 
 --- v23
-L.set_splash = "Disable splash screen shown after joining a server"
-
 L.set_avoid_det     = "Avoid being selected as Detective"
 L.set_avoid_det_tip = "Enable this to ask the server not to select you as Detective if possible. Does not mean you are Traitor more often."
 

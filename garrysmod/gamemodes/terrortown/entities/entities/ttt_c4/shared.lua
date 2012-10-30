@@ -90,7 +90,7 @@ end
 
 
 function ENT:UseOverride(activator)
-   if ValidEntity(activator) and activator:IsPlayer() then
+   if IsValid(activator) and activator:IsPlayer() then
       -- Traitors not allowed to disarm other traitor's C4 until he is dead
       local owner = self:GetOwner()
       if self:GetArmed() and owner != activator and activator:GetTraitor() and (IsValid(owner) and owner:Alive() and owner:GetTraitor()) then
@@ -133,7 +133,7 @@ function ENT:WeldToGround(state)
          phys:SetMass(150)
       end
 
-      if tr.Hit and (ValidEntity(tr.Entity) or tr.HitWorld) then
+      if tr.Hit and (IsValid(tr.Entity) or tr.HitWorld) then
          -- "Attach" to a brush if possible
          if IsValid(phys) and tr.HitWorld then
             phys:EnableMotion(false)
@@ -141,7 +141,7 @@ function ENT:WeldToGround(state)
 
          -- Else weld to objects we cannot pick up
          local entphys = tr.Entity:GetPhysicsObject()
-         if ValidEntity(entphys) and entphys:GetMass() > CARRY_WEIGHT_LIMIT then
+         if IsValid(entphys) and entphys:GetMass() > CARRY_WEIGHT_LIMIT then
             constraint.Weld(self, tr.Entity, 0, 0, 0, true)
          end
 
@@ -150,7 +150,7 @@ function ENT:WeldToGround(state)
    else
       constraint.RemoveConstraints(self.Entity, "Weld")
       local phys = self:GetPhysicsObject()
-      if ValidEntity(phys) then
+      if IsValid(phys) then
          phys:EnableMotion(true)
          phys:SetMass(self.OrigMass or 10)
       end
@@ -171,7 +171,7 @@ function ENT:SphereDamage(dmgowner, center, radius)
    local diff = nil
    local dmg = 0
    for _, ent in pairs(player.GetAll()) do
-      if ValidEntity(ent) and ent:Team() == TEAM_TERROR then
+      if IsValid(ent) and ent:Team() == TEAM_TERROR then
 
          -- dot of the difference with itself is distance squared
          diff = center - ent:GetPos()
@@ -247,7 +247,7 @@ function ENT:Explode(tr)
       util.Effect("Explosion", effect, true, true)
       util.Effect("HelicopterMegaBomb", effect, true, true)
 
-      timer.Simple(0.1, function() WorldSound(c4boom, pos, 100, 100) end)
+      timer.Simple(0.1, function() sound.Play(c4boom, pos, 100, 100) end)
 
       -- extra push
       local phexp = ents.Create("env_physexplosion")
@@ -260,7 +260,7 @@ function ENT:Explode(tr)
 
 
       -- few fire bits to ignite things
-      timer.Simple(0.2, function(p) StartFires(pos, tr, 4, 5, true, p) end, dmgowner)
+      timer.Simple(0.2, function() StartFires(pos, tr, 4, 5, true, dmgowner) end)
 
       self:SetExplodeTime(0)
 
@@ -338,7 +338,7 @@ function ENT:Think()
       end
 
       if SERVER then
-         WorldSound(beep, self:GetPos(), amp, 100)
+         sound.Play(beep, self:GetPos(), amp, 100)
       end
 
       local btime = (etime - CurTime()) / 30
@@ -457,14 +457,14 @@ if SERVER then
       if not idx or not time then return end
 
       local bomb = ents.GetByIndex(idx)
-      if ValidEntity(bomb) and (not bomb:GetArmed()) then
+      if IsValid(bomb) and (not bomb:GetArmed()) then
 
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then
             -- These cases should never arise in normal play, so no messages
             return
          elseif time < C4_MINIMUM_TIME or time > C4_MAXIMUM_TIME then
             return
-         elseif ValidEntity(bomb:GetPhysicsObject()) and bomb:GetPhysicsObject():HasGameFlag(FVPHYSICS_PLAYER_HELD) then
+         elseif IsValid(bomb:GetPhysicsObject()) and bomb:GetPhysicsObject():HasGameFlag(FVPHYSICS_PLAYER_HELD) then
             return
          else
             LANG.Msg(ply, "c4_armed")
@@ -491,7 +491,7 @@ if SERVER then
       if not idx or not wire then return end
 
       local bomb = ents.GetByIndex(idx)
-      if ValidEntity(bomb) and bomb:GetArmed() then
+      if IsValid(bomb) and bomb:GetArmed() then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then
             return
          elseif bomb.SafeWires[wire] or ply:IsTraitor() or ply == bomb:GetOwner() then
@@ -519,7 +519,7 @@ if SERVER then
       if not idx then return end
 
       local bomb = ents.GetByIndex(idx)
-      if ValidEntity(bomb) and bomb.GetArmed and (not bomb:GetArmed()) then
+      if IsValid(bomb) and bomb.GetArmed and (not bomb:GetArmed()) then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then return
          elseif not ply:CanCarryType(WEAPON_EQUIP1) then
             LANG.Msg(ply, "c4_no_room")
@@ -541,13 +541,13 @@ if SERVER then
 
 
    local function ReceiveC4Destroy(ply, cmd, args)
-      if (not ValidEntity(ply)) or (not ply:IsTerror()) or (not ply:Alive()) or #args != 1 then return end
+      if (not IsValid(ply)) or (not ply:IsTerror()) or (not ply:Alive()) or #args != 1 then return end
       local idx = tonumber(args[1])
 
       if not idx then return end
 
       local bomb = ents.GetByIndex(idx)
-      if ValidEntity(bomb) and (not bomb:GetArmed()) then
+      if IsValid(bomb) and (not bomb:GetArmed()) then
          if bomb:GetPos():Distance(ply:GetPos()) > 256 then return
          else
             -- spark to show onlookers we destroyed this bomb
@@ -561,6 +561,13 @@ if SERVER then
 end
 
 if CLIENT then
+   surface.CreateFont("C4ModelTimer", {
+                         font = "Default",
+                         size = 13,
+                         weight = 0,
+                         antialias = false
+                      })
+
    local strtime = string.FormattedTime
    local max = math.max
    function ENT:Draw()
@@ -570,7 +577,7 @@ if CLIENT then
          local angpos_ur = self:GetAttachment(self:LookupAttachment("controlpanel0_ur"))
          if angpos_ur then
             cam.Start3D2D(angpos_ur.Pos, angpos_ur.Ang, 0.2)
-            draw.DrawText(strtime(max(0, self:GetExplodeTime() - CurTime()), "%02i:%02i"), "Default", -1, 1, COLOR_RED, TEXT_ALIGN_RIGHT)
+            draw.DrawText(strtime(max(0, self:GetExplodeTime() - CurTime()), "%02i:%02i"), "C4ModelTimer", -1, 1, COLOR_RED, TEXT_ALIGN_RIGHT)
             cam.End3D2D()
          end
       end

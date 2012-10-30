@@ -45,7 +45,7 @@ function ENT:Initialize()
 end
 
 function ENT:UseOverride(activator)
-   if ValidEntity(activator) and activator:IsPlayer() and activator:IsActiveTraitor() then
+   if IsValid(activator) and activator:IsPlayer() and activator:IsActiveTraitor() then
       local prints = self.fingerprints or {}
       self:Remove()
 
@@ -68,7 +68,7 @@ function ENT:OnTakeDamage(dmginfo)
       local effect = EffectData()
       effect:SetOrigin(self:GetPos())
       util.Effect("cball_explode", effect)
-      WorldSound(zapsound, self:GetPos())
+      sound.Play(zapsound, self:GetPos())
 
       if IsValid(self:GetOwner()) then
          LANG.Msg(self:GetOwner(), "radio_broken")
@@ -191,8 +191,8 @@ function ENT:PlayDelayedSound(snd, ampl, last)
       if type(snd) == "table" then
          snd = table.Random(snd)
       end
-      
-      WorldSound(snd, self:GetPos(), ampl)
+
+      sound.Play(snd, self:GetPos(), ampl)
       self.Playing = not last
 
       --print("Playing", snd, last)
@@ -201,15 +201,20 @@ end
 
 function ENT:PlaySound(snd)
    local pos = self:GetPos()
+   local this = self
    if simplesounds[snd] then
-      WorldSound(table.Random(simplesounds[snd]), pos)
+      sound.Play(table.Random(simplesounds[snd]), pos)
    elseif gunsounds[snd] then
       local gunsound = gunsounds[snd]
       local times = math.random(gunsound.times[1], gunsound.times[2])
       local t = 0
       for i=1, times do
-         timer.Simple(t, self.PlayDelayedSound, self, gunsound.sound, gunsound.ampl or 90, (i == times))
-
+         timer.Simple(t,
+                      function()
+                         if IsValid(this) then
+                            this:PlayDelayedSound(gunsound.sound, gunsound.ampl or 90, (i == times))
+                         end
+                      end)
          if gunsound.burst then
             t = t + gunsound.delay
          else
@@ -224,7 +229,12 @@ function ENT:PlaySound(snd)
       local idx = 1
       for i=1, times do
          local sound = serialsound.sound[idx]
-         timer.Simple(t, self.PlayDelayedSound, self, sound, serialsound.ampl or 75, (i == times))
+         timer.Simple(t,
+                      function()
+                         if IsValid(this) then
+                            this:PlayDelayedSound(sound, serialsound.ampl or 75, (i == times))
+                         end
+                      end)
 
          t = t + serialsound.delay
          idx = idx + 1
@@ -247,7 +257,7 @@ function ENT:Think()
 end
 
 if SERVER then
-   
+
    local soundtypes = {
       "scream", "shotgun", "explosion",
       "pistol", "mac10", "deagle",
@@ -272,7 +282,7 @@ if SERVER then
          print("Received radio sound not in table from", ply)
          return
       end
-      
+
       radio:AddSound(snd)
    end
    concommand.Add("ttt_radio_play", RadioCmd)

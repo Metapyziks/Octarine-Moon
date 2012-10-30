@@ -25,19 +25,21 @@ local T  = LANG.GetTranslation
 local PT = LANG.GetParamTranslation
 
 -- Icons we'll use
-local smile_icon   = Material("gui/silkicons/emoticon_smile")
-local magnifier_icon = Material("gui/silkicons/magnifier")
-local bomb_icon    = Material("gui/silkicons/bomb")
-local wrong_icon   = Material("gui/silkicons/check_off")
-local right_icon   = Material("gui/silkicons/check_on")
-local shield_icon  = Material("gui/silkicons/shield")
-local star_icon    = Material("gui/silkicons/star")
-local app_icon     = Material("gui/silkicons/application")
-local refresh_icon = Material("gui/silkicons/arrow_refresh")
-local wrench_icon  = Material("gui/silkicons/wrench")
+local smile_icon   = Material("icon16/emoticon_smile.png")
+local magnifier_icon = Material("icon16/magnifier.png")
+local bomb_icon    = Material("icon16/bomb.png")
+local wrong_icon   = Material("icon16/cross.png")
+local right_icon   = Material("icon16/tick.png")
+local shield_icon  = Material("icon16/shield.png")
+local star_icon    = Material("icon16/star.png")
+local app_icon     = Material("icon16/application.png")
+local credit_icon = Material("icon16/coins.png")
+local wrench_icon  = Material("icon16/wrench.png")
 
 -- Shorter name, using it lots
 local Event = CLSCORE.DeclareEventDisplay
+
+local is_dmg = util.BitSet
 
 -- Round end event
 Event(EVENT_FINISH,
@@ -79,7 +81,7 @@ Event(EVENT_CREDITFOUND,
                                           player = e.b})
                end,
         icon = function(e)
-                  return refresh_icon, "Credit found"
+                  return credit_icon, "Credit found"
                end
      })
 
@@ -95,7 +97,7 @@ Event(EVENT_BODYFOUND,
 -- C4 fun
 Event(EVENT_C4DISARM,
       { text = function(e)
-                  return PT(e.s and "ev_c4_disarm1" or "ev_c4_disarm2", 
+                  return PT(e.s and "ev_c4_disarm1" or "ev_c4_disarm2",
                             {player = e.ni, owner = e.own or "aliens"})
                end,
         icon = function(e)
@@ -111,7 +113,7 @@ Event(EVENT_C4EXPLODE,
                   return bomb_icon, "C4 exploded"
                end
      })
-   
+
 Event(EVENT_C4PLANT,
       { text = function(e)
                   return PT("ev_c4_plant", {player = e.ni})
@@ -160,11 +162,11 @@ local function KillText(e)
    local txt = nil
 
    if e.att.uid == e.vic.uid then
-      if (dmg.t & DMG_BLAST == DMG_BLAST) then
-         
+      if is_dmg(dmg.t, DMG_BLAST) then
+
          txt = trap and "ev_blowup_trap" or "ev_blowup"
 
-      elseif (dmg.t & DMG_SONIC == DMG_SONIC) then
+      elseif is_dmg(dmg.t, DMG_SONIC) then
          txt = "ev_tele_self"
       else
          txt = trap and "ev_sui_using" or "ev_sui"
@@ -192,32 +194,32 @@ local function KillText(e)
    -- typically the "_using" strings are only for traps
    local using = (not weapon)
 
-   if (dmg.t & DMG_FALL == DMG_FALL) then
+   if is_dmg(dmg.t, DMG_FALL) then
       if ply_attacker then
          txt = "ev_fall_pushed"
       else
          txt = "ev_fall"
       end
-   elseif (dmg.t & DMG_BULLET == DMG_BULLET) then
+   elseif is_dmg(dmg.t, DMG_BULLET) then
       txt = "ev_shot"
 
       using = true
-   elseif (dmg.t & DMG_DROWN == DMG_DROWN) then
+   elseif is_dmg(dmg.t, DMG_DROWN) then
       txt = "ev_drown"
-   elseif (dmg.t & DMG_BLAST == DMG_BLAST) then
+   elseif is_dmg(dmg.t, DMG_BLAST) then
       txt = "ev_boom"
-   elseif (dmg.t & DMG_BURN == DMG_BURN) or (dmg.t & DMG_DIRECT == DMG_DIRECT) then
+   elseif is_dmg(dmg.t, DMG_BURN) or is_dmg(dmg.t, DMG_DIRECT) then
       txt = "ev_burn"
-   elseif (dmg.t & DMG_CLUB == DMG_CLUB) then
+   elseif is_dmg(dmg.t, DMG_CLUB) then
       txt = "ev_club"
-   elseif (dmg.t & DMG_SLASH == DMG_SLASH) then
+   elseif is_dmg(dmg.t, DMG_SLASH) then
       txt = "ev_slash"
-   elseif (dmg.t & DMG_SONIC == DMG_SONIC) then
+   elseif is_dmg(dmg.t, DMG_SONIC) then
       txt = "ev_tele"
-   elseif (dmg.t & DMG_PHYSGUN == DMG_PHYSGUN) then
+   elseif is_dmg(dmg.t, DMG_PHYSGUN) then
       txt = "ev_goomba"
       using = false
-   elseif (dmg.t & DMG_CRUSH == DMG_CRUSH) then
+   elseif is_dmg(dmg.t, DMG_CRUSH) then
       txt = "ev_crush"
    else
       txt = "ev_other"

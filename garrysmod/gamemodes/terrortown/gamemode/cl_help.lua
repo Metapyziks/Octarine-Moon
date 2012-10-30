@@ -12,9 +12,9 @@ HELPSCRN = {}
 
 function HELPSCRN:Show()
    local margin = 15
-   
+
    local dframe = vgui.Create("DFrame")
-   local w, h = 620, 470
+   local w, h = 630, 470
    dframe:SetSize(w, h)
    dframe:Center()
    dframe:SetTitle(GetTranslation("help_title"))
@@ -38,20 +38,14 @@ function HELPSCRN:Show()
 
    local tutparent = vgui.Create("DPanel", dtabs)
    tutparent:SetPaintBackground(false)
-   tutparent:StretchToParent(0, 0, 0, 0)
+   tutparent:StretchToParent(margin, 0, 0, 0)
 
    self:CreateTutorial(tutparent)
 
-   dtabs:AddSheet(GetTranslation("help_tut"), tutparent, "gui/silkicons/add", false, false, GetTranslation("help_tut_tip"))
-
-   local dfretta = vgui.Create("DPanel", dtabs)
-   dfretta:StretchToParent(padding,padding,padding,padding)
-   dfretta:SetPaintBackground(false)
-   
-   dtabs:AddSheet("Fretta", dfretta, "gui/silkicons/page", false, false, GetTranslation("help_fretta_tip"))
+   dtabs:AddSheet(GetTranslation("help_tut"), tutparent, "icon16/book_open.png", false, false, GetTranslation("help_tut_tip"))
 
    local dsettings = vgui.Create("DPanelList", dtabs)
-   dsettings:StretchToParent(0,0,padding,0)   
+   dsettings:StretchToParent(0,0,padding,0)
    dsettings:EnableVerticalScrollbar(true)
    dsettings:SetPadding(10)
    dsettings:SetSpacing(10)
@@ -65,13 +59,13 @@ function HELPSCRN:Show()
 
    dgui:CheckBox(GetTranslation("set_tips"), "ttt_tips_enable")
 
-   dgui:CheckBox(GetTranslation("set_voice"), "ttt_voicechat_topleft")
-
    cb = dgui:NumSlider(GetTranslation("set_startpopup"), "ttt_startpopup_duration", 0, 60, 0)
-
+   cb.Label:SetWrap(true)
    cb:SetTooltip(GetTranslation("set_startpopup_tip"))
 
-   dgui:NumSlider(GetTranslation("set_cross_opacity"), "ttt_ironsights_crosshair_opacity", 0, 1, 1)
+   cb = dgui:NumSlider(GetTranslation("set_cross_opacity"), "ttt_ironsights_crosshair_opacity", 0, 1, 1)
+   cb.Label:SetWrap(true)
+   cb:SetTooltip(GetTranslation("set_cross_opacity"))
 
    dgui:CheckBox(GetTranslation("set_cross_disable"), "ttt_disable_crosshair")
 
@@ -89,8 +83,6 @@ function HELPSCRN:Show()
    cb:SetTooltip(GetTranslation("set_wswitch_tip"))
 
    cb = dgui:CheckBox(GetTranslation("set_cues"), "ttt_cl_soundcues")
-
-   dgui:CheckBox(GetTranslation("set_splash"), "ttt_cl_disable_frettasplash")
 
    dsettings:AddItem(dgui)
 
@@ -117,43 +109,26 @@ function HELPSCRN:Show()
    local dlanguage = vgui.Create("DForm", dsettings)
    dlanguage:SetName(GetTranslation("set_title_lang"))
 
-   local dlang = dlanguage:MultiChoice(GetTranslation("set_lang"), "ttt_language")
-   dlang:SetEditable(false)
+   local dlang = vgui.Create("DComboBox", dlanguage)
+   dlang:SetConVar("ttt_language")
 
    dlang:AddChoice("Server default", "auto")
    for _, lang in pairs(LANG.GetLanguages()) do
       dlang:AddChoice(string.Capitalize(lang), lang)
    end
+   -- Why is DComboBox not updating the cvar by default?
+   dlang.OnSelect = function(idx, val, data)
+                       RunConsoleCommand("ttt_language", data)
+                    end
+   dlang.Think = dlang.ConVarStringThink
 
+   dlanguage:Help(GetTranslation("set_lang"))
+   dlanguage:AddItem(dlang)
 
    dsettings:AddItem(dlanguage)
 
-   dtabs:AddSheet(GetTranslation("help_settings"), dsettings, "gui/silkicons/wrench", false, false, GetTranslation("help_settings_tip"))
+   dtabs:AddSheet(GetTranslation("help_settings"), dsettings, "icon16/wrench.png", false, false, GetTranslation("help_settings_tip"))
 
-   local dform_fretta = vgui.Create("DForm", dfretta)
-   dform_fretta:SetName("Fretta")
-   dform_fretta:StretchToParent(padding*2,padding,padding,padding)
-
-   local dmodevote = vgui.Create("DButton", dform_fretta)
-   dmodevote:SetFont("Trebuchet22")
-   dmodevote:SetText(GetTranslation("help_vote"))
-   dmodevote:SizeToContents()
-   dmodevote:SetSize(dmodevote:GetWide() + margin * 2, dmodevote:GetTall() + margin*2)
-   dmodevote.ApplySchemeSettings = function() end
-
-   dmodevote.DoClick = function(s)
-                          RunConsoleCommand("voteforchange")
-                          dframe:Close()
-                       end
-
-
-   local voting = LocalPlayer():GetNWBool("WantsVote", false) or GetConVarNumber( "fretta_voting" ) == 0
-   dmodevote:SetDisabled(voting)
-
-   dform_fretta:AddItem(dmodevote)
-
-   dform_fretta:Help(GetTranslation("help_vote_tip"))
-   
    dframe:MakePopup()
 end
 
@@ -177,7 +152,7 @@ local function MuteTeamCallback(cv, old, new)
    local num = tonumber(new)
    if num and (num == 0 or num == 1) then
       RunConsoleCommand("ttt_mute_team", num)
-   end   
+   end
 end
 cvars.AddChangeCallback("ttt_mute_team_check", MuteTeamCallback)
 
@@ -189,7 +164,7 @@ function HELPSCRN:CreateTutorial(parent)
    local w, h = parent:GetSize()
    local m = 5
 
-   local bg = vgui.Create("DColouredBox", parent)
+   local bg = vgui.Create("ColoredBox", parent)
    bg:StretchToParent(0,0,0,0)
    bg:SetTall(330)
    bg:SetColor(COLOR_BLACK)
@@ -209,7 +184,7 @@ function HELPSCRN:CreateTutorial(parent)
 
    local bar = vgui.Create("TTTProgressBar", parent)
    bar:SetSize(200, bh)
-   bar:SetPos(0, 330)
+   bar:MoveBelow(bg)
    bar:CenterHorizontal()
    bar:SetMin(1)
    bar:SetMax(tutorial_pages)
@@ -228,13 +203,15 @@ function HELPSCRN:CreateTutorial(parent)
    bnext:SetFont("Trebuchet22")
    bnext:SetSize(bw, bh)
    bnext:SetText(GetTranslation("next"))
-   bnext:SetPos(w - bw - 10, 330)
+   bnext:CopyPos(bar)
+   bnext:AlignRight(1)
 
    local bprev = vgui.Create("DButton", parent)
    bprev:SetFont("Trebuchet22")
    bprev:SetSize(bw, bh)
    bprev:SetText(GetTranslation("prev"))
-   bprev:SetPos(0, 330)
+   bprev:CopyPos(bar)
+   bprev:AlignLeft()
 
    bnext.DoClick = function()
                       if tut.current < tutorial_pages then
@@ -251,8 +228,4 @@ function HELPSCRN:CreateTutorial(parent)
                          bar:SetValue(tut.current)
                       end
                    end
-
-   bnext.ApplySchemeSettings = function() end
-   bprev.ApplySchemeSettings = function() end
 end
-

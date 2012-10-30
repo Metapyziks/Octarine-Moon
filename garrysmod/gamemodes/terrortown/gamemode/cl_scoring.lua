@@ -1,7 +1,5 @@
 -- Game report
 
-require("glon")
-
 include("cl_awards.lua")
 
 local table = table
@@ -22,7 +20,10 @@ CLSCORE.EventDisplay = {}
 
 local skull_icon = Material("HUD/killicons/default")
 
-surface.CreateFont("Trebuchet24", 72, 1000, true, false, "WinHuge", true)
+surface.CreateFont("WinHuge", {font = "Trebuchet24",
+                               size = 72,
+                               weight = 1000,
+                               shadow = true})
 
 -- so much text here I'm using shorter names than usual
 local T = LANG.GetTranslation
@@ -33,7 +34,7 @@ function CLSCORE:GetDisplay(key, event)
    if not displayfns then return end
    local keyfn = displayfns[key]
    if not keyfn then return end
-   
+
    return keyfn(event)
 end
 
@@ -82,7 +83,7 @@ function CLSCORE:FillDList(dlst)
       local etxt = self:TextForEvent(e)
       local eicon, ttip = self:IconForEvent(e)
       local etime = self:TimeForEvent(e)
-      
+
       if etxt then
          if eicon then
             local mat = eicon
@@ -92,7 +93,7 @@ function CLSCORE:FillDList(dlst)
             eicon:SetKeepAspect(true)
             eicon:SizeToContents()
          end
-         
+
 
          dlst:AddLine(etime, eicon, "  " .. etxt)
       end
@@ -105,8 +106,8 @@ function CLSCORE:BuildEventLogPanel(dpanel)
    local w, h = dpanel:GetSize()
 
    local dlist = vgui.Create("DListView", dpanel)
-   dlist:SetPos(0, 2)
-   dlist:SetSize(w, h - 25)
+   dlist:SetPos(0, 0)
+   dlist:SetSize(w, h - margin*2)
    dlist:SetSortable(true)
    dlist:SetMultiSelect(false)
 
@@ -135,13 +136,15 @@ function CLSCORE:BuildScorePanel(dpanel)
    dlist:SetSize(w, h)
    dlist:SetSortable(true)
    dlist:SetMultiSelect(false)
+   dlist:SetPaintBackground(false)
+   dlist:SetDrawBackground(false)
 
    local colnames = {"", "col_player", "col_role", "col_kills1", "col_kills2", "col_points", "col_team", "col_total"}
    for k, name in pairs(colnames) do
       if name == "" then
          -- skull icon column
          local c = dlist:AddColumn("")
-         c:SetFixedWidth(22)
+         c:SetFixedWidth(18)
       else
          dlist:AddColumn(T(name))
       end
@@ -168,11 +171,16 @@ function CLSCORE:BuildScorePanel(dpanel)
 
          local surv = ""
          if s.deaths > 0 then
-            surv = vgui.Create("DImage", dlist)
-            surv:SetMaterial(skull_icon)
-            surv:SetTooltip("Dead")
-            surv:SetKeepAspect(true)
-            surv:SetSize(16,16)
+            surv = vgui.Create("ColoredBox", dlist)
+            surv:SetColor(Color(150, 50, 50))
+            surv:SetBorder(false)
+            surv:SetSize(18,18)
+
+            local skull = vgui.Create("DImage", surv)
+            skull:SetMaterial(skull_icon)
+            skull:SetTooltip("Dead")
+            skull:SetKeepAspect(true)
+            skull:SetSize(18,18)
          end
 
          local points_own   = KillsToPoints(s, was_traitor)
@@ -203,21 +211,21 @@ function CLSCORE:AddAward(y, pw, award, dpanel)
    local text = award.text
    local title = string.upper(award.title)
 
-   local titlelbl = vgui.Create("Label", dpanel)
+   local titlelbl = vgui.Create("DLabel", dpanel)
    titlelbl:SetText(title)
    titlelbl:SetFont("TabLarge")
    titlelbl:SizeToContents()
    local tiw, tih = titlelbl:GetSize()
 
-   local nicklbl = vgui.Create("Label", dpanel)
+   local nicklbl = vgui.Create("DLabel", dpanel)
    nicklbl:SetText(nick)
-   nicklbl:SetFont("DefaultBold")
+   nicklbl:SetFont("DermaDefaultBold")
    nicklbl:SizeToContents()
    local nw, nh = nicklbl:GetSize()
-   
-   local txtlbl = vgui.Create("Label", dpanel)
+
+   local txtlbl = vgui.Create("DLabel", dpanel)
    txtlbl:SetText(text)
-   txtlbl:SetFont("Default")
+   txtlbl:SetFont("DermaDefault")
    txtlbl:SizeToContents()
    local tw, th = txtlbl:GetSize()
 
@@ -269,7 +277,7 @@ function CLSCORE:BuildHilitePanel(dpanel)
    local numtr = table.Count(self.TraitorIDs)
 
 
-   local bg = vgui.Create("DColouredBox", dpanel)
+   local bg = vgui.Create("ColoredBox", dpanel)
    bg:SetColor(Color(50, 50, 50, 255))
    bg:SetSize(w,h)
    bg:SetPos(0,0)
@@ -387,7 +395,7 @@ function CLSCORE:ShowPanel()
    dtabhilite:StretchToParent(padding,padding,padding,padding)
    self:BuildHilitePanel(dtabhilite)
 
-   dtabsheet:AddSheet(T("report_tab_hilite"), dtabhilite, "gui/silkicons/star", false, false, T("report_tab_hilite_tip"))
+   dtabsheet:AddSheet(T("report_tab_hilite"), dtabhilite, "icon16/star.png", false, false, T("report_tab_hilite_tip"))
 
    -- Event log tab
    local dtabevents = vgui.Create("DPanel", dtabsheet)
@@ -395,7 +403,7 @@ function CLSCORE:ShowPanel()
    dtabevents:StretchToParent(padding, padding, padding, padding)
    self:BuildEventLogPanel(dtabevents)
 
-   dtabsheet:AddSheet(T("report_tab_events"), dtabevents, "gui/silkicons/application_view_detail", false, false, T("report_tab_events_tip"))
+   dtabsheet:AddSheet(T("report_tab_events"), dtabevents, "icon16/application_view_detail.png", false, false, T("report_tab_events_tip"))
 
    -- Score tab
    local dtabscores = vgui.Create("DPanel", dtabsheet)
@@ -403,7 +411,7 @@ function CLSCORE:ShowPanel()
    dtabscores:StretchToParent(padding, padding, padding, padding)
    self:BuildScorePanel(dtabscores)
 
-   dtabsheet:AddSheet(T("report_tab_scores"), dtabscores, "gui/silkicons/user", false, false, T("report_tab_scores_tip"))
+   dtabsheet:AddSheet(T("report_tab_scores"), dtabscores, "icon16/user.png", false, false, T("report_tab_scores_tip"))
 
    dpanel:MakePopup()
 
@@ -420,7 +428,8 @@ function CLSCORE:ClearPanel()
       -- not offer a means of killing the tooltip, and doesn't clean it up
       -- properly on Remove
       gui.SetMousePos( ScrW()/2, ScrH()/2 )
-      timer.Simple(0, self.Panel.Remove, self.Panel)
+      local pnl = self.Panel
+      timer.Simple(0, function() pnl:Remove() end)
    end
 end
 
@@ -430,7 +439,12 @@ function CLSCORE:SaveLog()
       return
    end
 
-   local logname = "ttt/logs/ttt_events_" .. os.time() .. ".txt"
+   local logdir = "ttt/logs"
+   if not file.IsDir(logdir, "DATA") then
+      file.CreateDir(logdir)
+   end
+
+   local logname = logdir .. "/ttt_events_" .. os.time() .. ".txt"
    local log = "Trouble in Terrorist Town - Round Events Log\n".. string.rep("-", 50) .."\n"
 
    log = log .. string.format("%s | %-25s | %s\n", " TIME", "TYPE", "WHAT HAPPENED") .. string.rep("-", 50) .."\n"
@@ -478,7 +492,7 @@ function CLSCORE:Init(events)
          break
       end
    end
-   
+
    -- Get scores and players
    local scores = {}
    local nicks = {}
@@ -502,10 +516,6 @@ end
 function CLSCORE:ReportEvents(events)
    self:Reset()
 
---   if events != self.StoredEvents then
---      self.StoredEvents = table.Copy(events)
---   end
-
    self:Init(events)
    self:ShowPanel()
 end
@@ -517,30 +527,36 @@ function CLSCORE:Reopen()
 end
 
 local buff = ""
---evdebug = nil
-local function ReceiveReportStream(um)
---   Msg("Receiving message... \n")
-   local cont = um:ReadBool()
+local function ReceiveReportStream(len)
+   local cont = net.ReadBit() == 1
 
-   buff = buff .. um:ReadString()
+   buff = buff .. net.ReadString()
+   print("Receiving report buffer:", len, #buff, cont)
 
-   if cont then 
+   if cont then
       return
    else
       -- do stuff with buffer contents
-      local status, results = pcall(glon.decode, buff)
 
-      if status then
-         CLSCORE:ReportEvents(results)
+      local json_events = buff -- util.Decompress(buff)
+      if not json_events then
+         ErrorNoHalt("Round report decompression failed!\n")
       else
-         ErrorNoHalt("Round report event encoding returned an error: " .. results .. "\n")
+         -- convert the json string back to a table
+         local events = util.JSONToTable(json_events)
+
+         if istable(events) then
+            CLSCORE:ReportEvents(events)
+         else
+            ErrorNoHalt("Round report event decoding failed!\n")
+         end
       end
 
       -- flush
-      buff = ""      
+      buff = ""
    end
 end
-usermessage.Hook("report_stream", ReceiveReportStream)
+net.Receive("report_stream", ReceiveReportStream)
 
 local function SaveLog(ply, cmd, args)
    CLSCORE:SaveLog()

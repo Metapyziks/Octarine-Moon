@@ -64,7 +64,7 @@ end
 
 function util.GetNextAlivePlayer(ply)
    local alive = util.GetAlivePlayers()
-   
+
    if #alive < 1 then return nil end
 
    local prev = nil
@@ -142,9 +142,10 @@ function util.StartBleeding(ent, dmg, t)
    if ent:IsPlayer() then
       times = times * 2
       delay = delay / 2
-   end 
+   end
 
-   timer.Create("bleed" .. ent:EntIndex(), delay, times, DoBleed, ent)
+   timer.Create("bleed" .. ent:EntIndex(), delay, times,
+                function() DoBleed(ent) end)
 end
 
 local zapsound = Sound("npc/assassin/ball_zap1.wav")
@@ -152,7 +153,7 @@ function util.EquipmentDestroyed(pos)
    local effect = EffectData()
    effect:SetOrigin(pos)
    util.Effect("cball_explode", effect)
-   WorldSound(zapsound, pos)
+   sound.Play(zapsound, pos)
 end
 
 -- Useful default behaviour for semi-modal DFrames
@@ -183,7 +184,7 @@ function util.passthrough(x) return x end
 local rand = math.random
 function table.Shuffle(t)
   local n = #t
- 
+
   while n > 2 do
     -- n is now the last pertinent index
     local k = rand(n) -- 1 <= k <= n
@@ -191,7 +192,7 @@ function table.Shuffle(t)
     t[n], t[k] = t[k], t[n]
     n = n - 1
   end
- 
+
   return t
 end
 
@@ -236,7 +237,7 @@ end
 -- Returns copy of table with only specific keys copied
 function table.CopyKeys(tbl, keys)
    if not (tbl and keys) then return end
-   
+
    local out = {}
    local val = nil
    for _, k in pairs(keys) do
@@ -278,7 +279,7 @@ end
 Warning = ErrorNoHalt
 
 function Dev(level, ...)
-   if server_settings and server_settings.Int("developer", 0) >= level then
+   if cvars and cvars.Number("developer", 0) >= level then
       Msg("[TTT dev]")
       -- table.concat does not tostring, derp
 
@@ -296,7 +297,12 @@ function IsPlayer(ent)
 end
 
 function IsRagdoll(ent)
-   return ent and ent.Classname == "prop_ragdoll"
+   return ent and ent:IsValid() and ent:GetClass() == "prop_ragdoll"
+end
+
+local band = bit.band
+function util.BitSet(val, bit)
+   return band(val, bit) == bit
 end
 
 if CLIENT then
@@ -341,6 +347,14 @@ if CLIENT then
          return "karma_low", karmacolors.low
       else
          return "karma_min", karmacolors.min
-      end   
+      end
+   end
+
+   function util.IncludeClientFile(file)
+      include(file)
+   end
+else
+   function util.IncludeClientFile(file)
+      AddCSLuaFile(file)
    end
 end

@@ -1,7 +1,5 @@
 ---- Customized scoring
 
-require("glon")
-
 local math = math
 local string = string
 local table = table
@@ -61,9 +59,9 @@ function SCORE:HandleKill( victim, attacker, dmginfo )
    if not (IsValid(victim) and victim:IsPlayer()) then return end
 
    local e = {
-      id=EVENT_KILL, 
-      att={ni="", uid=-1, tr=false}, 
-      vic={ni=victim:Nick(), uid=victim:UniqueID(), tr=false}, 
+      id=EVENT_KILL,
+      att={ni="", uid=-1, tr=false},
+      vic={ni=victim:Nick(), uid=victim:UniqueID(), tr=false},
       dmg=CopyDmg(dmginfo)};
 
    e.dmg.h = victim.was_headshot
@@ -183,7 +181,7 @@ function SCORE:ApplyEventLogScores(wintype)
    for k, e in pairs(self.Events) do
       if e.id == EVENT_KILL then
          local victim = player.GetByUniqueID(e.vic.uid)
-         if ValidEntity(victim) then
+         if IsValid(victim) then
             victim:AddDeaths(1)
          end
       end
@@ -202,20 +200,24 @@ function SCORE:Reset()
    self.Events = {}
 end
 
-local function CompressForStream(events)
+local function SortEvents(events)
    -- sort events on time
    table.sort(events, function(a,b)
                          if not b or not a then return false end
                          return a.t and b.t and a.t < b.t
                       end)
+   return events
+end
+
+local function EncodeForStream(events)
+   events = SortEvents(events)
 
    -- may want to filter out data later
    -- just serialize for now
 
-   local status, result = pcall(glon.encode, events)
-
-   if not status then
-      ErrorNoHalt("Round report event encoding returned an error: " .. result .. "\n")
+   local result = util.TableToJSON( events )
+   if not result then
+      ErrorNoHalt("Round report event encoding failed!\n")
       return false
    else
       return result
@@ -223,30 +225,29 @@ local function CompressForStream(events)
 end
 
 function SCORE:StreamToClients()
---   datastream.StreamToClients(player.GetHumans(), "ReportStreamHook", self.Events)
-   -- datastream is a piece of crap, do it ourselves
-
-   local s = CompressForStream(self.Events)
-
+   local s = EncodeForStream(self.Events)
    if not s then
       return -- error occurred
    end
 
-   -- divide into happy lil bits
+   -- divide into happy lil bits.
+   -- this was necessary with user messages, now it's
+   -- a just-in-case thing if a round somehow manages to be > 64K
    local cut = {}
+   local max = 65500
    while #s != 0 do
-      local bit = string.sub(s, 1, 127)
+      local bit = string.sub(s, 1, max - 1)
       table.insert(cut, bit)
 
-      s = string.sub(s, 128, -1)
+      s = string.sub(s, max, -1)
    end
-   
+
    local parts = #cut
    for k, bit in pairs(cut) do
-      
-      umsg.Start("report_stream")
-      umsg.Bool( (k != parts) ) -- continuation bit, true if there's more coming
-      umsg.String(bit)
-      umsg.End()
+      net.Start("report_stream")
+      net.WriteBit((k != parts)) -- continuation bit, 1 if there's more coming
+      net.WriteString(bit)
+      net.Broadcast()
    end
 end
+util.AddNetworkString("report_stream")

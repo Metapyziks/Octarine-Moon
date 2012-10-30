@@ -17,7 +17,7 @@ local function SendPlayerRoles()
    for k, v in pairs(player.GetAll()) do
       umsg.Start("ttt_role", v)
       umsg.Char(v:GetRole())
-      umsg.End()      
+      umsg.End()
    end
 end
 
@@ -105,7 +105,7 @@ end
 ---- Console commands
 
 local function force_terror(ply)
-   if server_settings.Bool("sv_cheats", 0) then
+   if cvars.Bool("sv_cheats", 0) then
       ply:SetRole(ROLE_INNOCENT)
       ply:UnSpectate()
       ply:SetTeam(TEAM_TERROR)
@@ -121,7 +121,7 @@ end
 concommand.Add("ttt_force_terror", force_terror)
 
 local function force_traitor(ply)
-   if server_settings.Bool("sv_cheats", 0) then
+   if cvars.Bool("sv_cheats", 0) then
       ply:SetRole(ROLE_TRAITOR)
 
       SendFullStateUpdate()
@@ -130,7 +130,7 @@ end
 concommand.Add("ttt_force_traitor", force_traitor)
 
 local function force_detective(ply)
-   if server_settings.Bool("sv_cheats", 0) then
+   if cvars.Bool("sv_cheats", 0) then
       ply:SetRole(ROLE_DETECTIVE)
 
       SendFullStateUpdate()
@@ -140,14 +140,14 @@ concommand.Add("ttt_force_detective", force_detective)
 
 
 local function force_spectate(ply, cmd, arg)
-   if ValidEntity(ply) then
+   if IsValid(ply) then
       if #arg == 1 and tonumber(arg[1]) == 0 then
          ply:SetForceSpec(false)
       else
          if not ply:IsSpec() then
             ply:Kill()
          end
-         
+
          GAMEMODE:PlayerSpawnAsSpectator(ply)
          ply:SetTeam(TEAM_SPEC)
          ply:SetRole(ROLE_INNOCENT)

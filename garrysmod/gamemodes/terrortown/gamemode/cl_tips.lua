@@ -18,9 +18,9 @@ PANEL.Colors = {
 function PANEL:Paint()
    -- parent panel will deal with the normal bg, we only need to worry about
    -- mouse effects
-   
+
    local clr = self.Colors.default
-   if self.Depressed or self:GetSelected() then
+   if self.Depressed then
       clr = self.Colors.press
    elseif self.Hovered then
       clr = self.Colors.hover
@@ -30,7 +30,7 @@ function PANEL:Paint()
    self:DrawOutlinedRect()
 end
 
-derma.DefineControl("TipsButton", "Tip cycling button", PANEL, "DSysButton")
+derma.DefineControl("TipsButton", "Tip cycling button", PANEL, "DButton")
 
 
 --- Main tip panel
@@ -68,7 +68,7 @@ function PANEL:Init()
    self.AutoDelay = 15
    self.ManualDelay = 25
 
-   self.tiptext = vgui.Create("Label", self)
+   self.tiptext = vgui.Create("DLabel", self)
    self.tiptext:SetContentAlignment(5)
    self.tiptext:SetText(GetTranslation("tips_panel_title"))
 
@@ -76,24 +76,24 @@ function PANEL:Init()
 
    self.buttons = {}
    self.buttons.left = vgui.Create("TipsButton", self.bwrap)
-   self.buttons.left:SetType("left")
+   self.buttons.left:SetText("<")
 
    self.buttons.left.DoClick = function() self:PrevTip() end
 
    self.buttons.right = vgui.Create("TipsButton", self.bwrap)
-   self.buttons.right:SetType("right")
+   self.buttons.right:SetText(">")
 
    self.buttons.right.DoClick = function() self:NextTip() end
 
    self.buttons.help = vgui.Create("TipsButton", self.bwrap)
-   self.buttons.help:SetType("question")
+   self.buttons.help:SetText("?")
    self.buttons.help:SetConsoleCommand("ttt_helpscreen")
 
    self.buttons.close = vgui.Create("TipsButton", self.bwrap)
-   self.buttons.close:SetType("close")
+   self.buttons.close:SetText("X")
    self.buttons.close:SetConsoleCommand("ttt_tips_hide")
 
-   self.TipIndex = math.random(1, #tip_ids)
+   self.TipIndex = math.random(1, #tip_ids) or 0
    self:SetTip(self.TipIndex)
 end
 
@@ -157,7 +157,7 @@ function PANEL:PerformLayout()
       return
    end
 
-   local bsize = 15
+   local bsize = 14
 
    -- position buttons
    self.bwrap:SetSize(bsize * 2 + 2, bsize * 2 + 2)
@@ -184,7 +184,7 @@ function PANEL:PerformLayout()
 
    local x = off_left + ((room - width) / 2)
    local y = ScrH() - off_bottom - height
-   
+
    self:SetPos(x, y)
    self:SetSize(width, height)
 
@@ -198,9 +198,9 @@ function PANEL:ApplySchemeSettings()
    end
 
    self.bwrap:SetPaintBackgroundEnabled(false)
-   
+
    self.tiptext:SetFont("DefaultBold")
-   self.tiptext:SetFGColor(COLOR_WHITE)
+   self.tiptext:SetTextColor(COLOR_WHITE)
    self.tiptext:SetWrap(true)
 end
 

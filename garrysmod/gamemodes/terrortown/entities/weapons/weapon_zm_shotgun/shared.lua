@@ -166,7 +166,7 @@ end
 -- lucky headshots relatively easily due to the spread.
 function SWEP:GetHeadshotMultiplier(victim, dmginfo)
    local att = dmginfo:GetAttacker()
-   if not ValidEntity(att) then return 3 end
+   if not IsValid(att) then return 3 end
 
    local dist = victim:GetPos():Distance(att:GetPos())
    local d = math.max(0, dist - 140)

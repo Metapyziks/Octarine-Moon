@@ -38,7 +38,7 @@ function EFFECT:Think()
       self.Alpha = 1 - ((CurTime() - self.FadeOut) / self.FadeTime)
    end
 
-   self.Orb:SetModelScale(self.EndScale * self.Alpha)
+   self.Orb:SetModelScale(self.EndScale * self.Alpha, 0)
 
    local ang = self.Orb:GetAngles()
    ang.y = ang.y + 500 * FrameTime()
@@ -49,7 +49,7 @@ end
 
 local mat_orb = Material("models/effects/splodearc_sheet")
 function EFFECT:Render()
-   SetMaterialOverride(mat_orb)
+   render.MaterialOverride(mat_orb)
    render.SuppressEngineLighting( true )
    render.SetColorModulation(0, 0, 1)
    render.SetBlend(0.8 * self.Alpha)
@@ -59,6 +59,6 @@ function EFFECT:Render()
    render.SetBlend(1)
    render.SetColorModulation(1, 1, 1)
    render.SuppressEngineLighting(false)
-   SetMaterialOverride()
+   render.MaterialOverride()
 end
 

@@ -69,7 +69,7 @@ local throwsound = Sound( "Weapon_SLAM.SatchelThrow" )
 function SWEP:HealthDrop()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -80,7 +80,7 @@ function SWEP:HealthDrop()
       local vthrow = vvel + vang * 200
 
       local health = ents.Create("ttt_health_station")
-      if ValidEntity(health) then
+      if IsValid(health) then
          health:SetPos(vsrc + vang * 10)
          health:Spawn()
 
@@ -88,7 +88,7 @@ function SWEP:HealthDrop()
 
          health:PhysWake()
          local phys = health:GetPhysicsObject()
-         if ValidEntity(phys) then
+         if IsValid(phys) then
             phys:SetVelocity(vthrow)
          end   
          self:Remove()
@@ -106,7 +106,7 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end

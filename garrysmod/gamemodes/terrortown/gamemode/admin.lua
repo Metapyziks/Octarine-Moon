@@ -25,7 +25,7 @@ local function TraitorSort(a,b)
 end
 
 function PrintTraitors(ply)
-   if not ValidEntity(ply) or ply:IsSuperAdmin() then
+   if not IsValid(ply) or ply:IsSuperAdmin() then
       ServerLog(Format("%s used ttt_print_traitors\n", IsValid(ply) and ply:Nick() or "console"))
 
       local pr = GetPrintFn(ply)
@@ -34,7 +34,7 @@ function PrintTraitors(ply)
       table.sort(ps, TraitorSort)
 
       for _, p in pairs(ps) do
-         if ValidEntity(p) then
+         if IsValid(p) then
             pr(p:GetTraitor() and "TRAITOR" or "Innocent", ":", p:Nick())
          end
       end
@@ -55,7 +55,7 @@ concommand.Add("ttt_print_usergroups", PrintGroups)
 function PrintReport(ply)
    local pr = GetPrintFn(ply)
 
-   if not ValidEntity(ply) or ply:IsSuperAdmin() then
+   if not IsValid(ply) or ply:IsSuperAdmin() then
       ServerLog(Format("%s used ttt_print_adminreport\n", IsValid(ply) and ply:Nick() or "console"))
 
       for k, e in pairs(SCORE.Events) do
@@ -68,7 +68,7 @@ function PrintReport(ply)
          end
       end
    else
-      if ValidEntity(ply) then
+      if IsValid(ply) then
          pr("You do not appear to be RCON or a superadmin!")
       end
    end
@@ -84,9 +84,9 @@ local function PrintKarma(ply)
       KARMA.PrintAll(pr)
 
    else
-      if ValidEntity(ply) then
+      if IsValid(ply) then
          pr("You do not appear to be RCON or a superadmin!")
-      end      
+      end
    end
 end
 concommand.Add("ttt_print_karma", PrintKarma)
@@ -105,7 +105,7 @@ local dmglog_save    = CreateConVar("ttt_damagelog_save", "0")
 local function PrintDamageLog(ply)
    local pr = GetPrintFn(ply)
 
-   if (not ValidEntity(ply)) or ply:IsSuperAdmin() or GetRoundState() != ROUND_ACTIVE then
+   if (not IsValid(ply)) or ply:IsSuperAdmin() or GetRoundState() != ROUND_ACTIVE then
       ServerLog(Format("%s used ttt_print_damagelog\n", IsValid(ply) and ply:Nick() or "console"))
       pr("*** Damage log:\n")
 
@@ -119,7 +119,7 @@ local function PrintDamageLog(ply)
 
       pr("*** Damage log end.")
    else
-      if ValidEntity(ply) then
+      if IsValid(ply) then
          pr("You do not appear to be RCON or a superadmin, nor are we in the post-round phase!")
       end
    end
@@ -136,7 +136,7 @@ local function SaveDamageLog()
    else
       for k, txt in ipairs(GAMEMODE.DamageLog) do
          text = text .. txt .. "\n"
-      end      
+      end
    end
 
    local fname = Format("ttt/logs/dmglog_%s_%d.txt",
@@ -171,7 +171,7 @@ local function DetectServerPlugin()
 end
 
 local function StandardBan(ply, length, reason)
-   RunConsoleCommand("banid", length, ply:SteamID())
+   RunConsoleCommand("banid", length, ply:UserID())
    ply:Kick(reason)
 end
 

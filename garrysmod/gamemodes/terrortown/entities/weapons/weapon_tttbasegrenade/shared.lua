@@ -85,7 +85,7 @@ function SWEP:PullPin()
    if self:GetPin() then return end
 
    local ply = self.Owner
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    self.Weapon:SendWeaponAnim(ACT_VM_PULLPIN)
 
@@ -101,7 +101,7 @@ end
 
 function SWEP:Think()
    local ply = self.Owner
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    -- pin pulled and attack loose = throw
    if self:GetPin() then
@@ -129,7 +129,7 @@ end
 
 function SWEP:BlowInFace()
    local ply = self.Owner
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    if self.was_thrown then return end
 
@@ -156,7 +156,7 @@ function SWEP:Throw()
       self:SetThrowTime(0)
    elseif SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.was_thrown then return end
 
@@ -200,7 +200,7 @@ end
 
 function SWEP:CreateGrenade(src, ang, vel, angimp, ply)
    local gren = ents.Create(self:GetGrenadeName())
-   if not ValidEntity(gren) then return end
+   if not IsValid(gren) then return end
 
    gren:SetPos(src)
    gren:SetAngles(ang)
@@ -218,7 +218,7 @@ function SWEP:CreateGrenade(src, ang, vel, angimp, ply)
    gren:PhysWake()
 
    local phys = gren:GetPhysicsObject()
-   if ValidEntity(phys) then
+   if IsValid(phys) then
       phys:SetVelocity(vel)
       phys:AddAngleVelocity(angimp)
    end
@@ -277,7 +277,7 @@ function SWEP:Initialize()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("use", "weapon_ttt_unarmed")
    end
 end

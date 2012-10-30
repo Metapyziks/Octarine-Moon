@@ -4,7 +4,7 @@ include("weaponry_shd.lua") -- inits WEPS tbl
 -- Pool all SWEP classnames, as we will be sending some over the wire regularly
 for k, w in pairs(weapons.GetList()) do
    if w then
-      umsg.PoolString(w.Classname)
+      umsg.PoolString(WEPS.GetClass(w))
    end
 end
 
@@ -14,7 +14,7 @@ local IsEquipment = WEPS.IsEquipment
 
 -- Prevent players from picking up multiple weapons of the same type etc
 function GM:PlayerCanPickupWeapon(ply, wep)
-   if not ValidEntity(wep) and not ValidEntity(ply) then return end
+   if not IsValid(wep) and not IsValid(ply) then return end
 
    -- Disallow picking up for ammo
    if ply:HasWeapon(wep:GetClass()) then
@@ -46,7 +46,7 @@ local function GetLoadoutWeapons(r)
       for k, w in pairs(weapons.GetList()) do
          if w and type(w.InLoadoutFor) == "table" then
             for _, wrole in pairs(w.InLoadoutFor) do
-               table.insert(tbl[wrole], w.Classname)
+               table.insert(tbl[wrole], WEPS.GetClass(w))
             end
          end
       end
@@ -139,9 +139,9 @@ end
 -- possible.
 local function LateLoadout(id)
    local ply = player.GetByID(id)
-   if not ValidEntity(ply) then 
+   if not IsValid(ply) then
       timer.Destroy("lateloadout" .. id)
-      return 
+      return
    end
 
    if not HasLoadoutWeapons(ply) then
@@ -169,7 +169,8 @@ function GM:PlayerLoadout( ply )
 
       if not HasLoadoutWeapons(ply) then
          MsgN("Could not spawn all loadout weapons for " .. ply:Nick() .. ", will retry.")
-         timer.Create("lateloadout" .. ply:EntIndex(), 1, 0, LateLoadout, ply:EntIndex())
+         timer.Create("lateloadout" .. ply:EntIndex(), 1, 0,
+                      function() LateLoadout(ply:EntIndex()) end)
       end
    end
 end
@@ -187,7 +188,7 @@ local function ForceWeaponSwitch(ply, cmd, args)
    -- Works because no weapon uses those.
    local wepname = args[1]
    local wep = ply:GetWeapon(wepname)
-   if ValidEntity(wep) then
+   if IsValid(wep) then
       -- Weapons apparently not guaranteed to have this
       if wep.SetClip2 then
          wep:SetClip2(1)
@@ -200,7 +201,7 @@ concommand.Add("wepswitch", ForceWeaponSwitch)
 ---- Weapon dropping
 
 function WEPS.DropNotifiedWeapon(ply, wep, death_drop)
-   if ValidEntity(ply) and ValidEntity(wep) then
+   if IsValid(ply) and IsValid(wep) then
       -- Hack to tell the weapon it's about to be dropped and should do what it
       -- must right now
       if wep.PreDrop then
@@ -225,11 +226,11 @@ function WEPS.DropNotifiedWeapon(ply, wep, death_drop)
 end
 
 local function DropActiveWeapon(ply)
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    local wep = ply:GetActiveWeapon()
 
-   if not ValidEntity(wep) then return end
+   if not IsValid(wep) then return end
 
    if wep.AllowDrop == false then
       return
@@ -249,10 +250,10 @@ end
 concommand.Add("ttt_dropweapon", DropActiveWeapon)
 
 local function DropActiveAmmo(ply)
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
 
    local wep = ply:GetActiveWeapon()
-   if not ValidEntity(wep) then return end
+   if not IsValid(wep) then return end
 
    if not wep.AmmoEnt then return end
 
@@ -308,7 +309,7 @@ local function GiveEquipmentWeapon(uid, cls)
    local ply = player.GetByUniqueID(uid)
    local tmr = "give_equipment" .. tostring(uid)
 
-   if (not ValidEntity(ply)) or (not ply:IsActiveSpecial()) then
+   if (not IsValid(ply)) or (not ply:IsActiveSpecial()) then
       timer.Destroy(tmr)
       return
    end
@@ -318,8 +319,8 @@ local function GiveEquipmentWeapon(uid, cls)
    local w = ply:Give(cls)
 
    if (not IsValid(w)) or (not ply:HasWeapon(cls)) then
-      if not timer.IsTimer(tmr) then
-         timer.Create(tmr, 1, 0, GiveEquipmentWeapon, uid, cls)
+      if not timer.Exists(tmr) then
+         timer.Create(tmr, 1, 0, function() GiveEquipmentWeapon(uid, cls) end)
       end
 
       -- we will be retrying
@@ -335,12 +336,12 @@ local function GiveEquipmentWeapon(uid, cls)
 end
 
 local function HasPendingOrder(ply)
-   return timer.IsTimer("give_equipment" .. tostring(ply:UniqueID()))
+   return timer.Exists("give_equipment" .. tostring(ply:UniqueID()))
 end
 
 -- Equipment buying
 local function OrderEquipment(ply, cmd, args)
-   if not ValidEntity(ply) or #args != 1 then return end
+   if not IsValid(ply) or #args != 1 then return end
 
    if not (ply:IsActiveTraitor() or ply:IsActiveDetective()) then return end
 
@@ -425,7 +426,7 @@ concommand.Add("ttt_order_equipment", OrderEquipment)
 
 
 local function SetDisguise(ply, cmd, args)
-   if not ValidEntity(ply) or not ply:IsActiveTraitor() then return end
+   if not IsValid(ply) or not ply:IsActiveTraitor() then return end
 
    if ply:HasEquipmentItem(EQUIP_DISGUISE) then
       local state = #args == 1 and tobool(args[1])
@@ -437,7 +438,7 @@ end
 concommand.Add("ttt_set_disguise", SetDisguise)
 
 local function CheatCredits(ply)
-   if server_settings.Bool("sv_cheats", false) and ValidEntity(ply) then
+   if cvars.Bool("sv_cheats", false) and IsValid(ply) then
       ply:AddCredits(10)
    end
 end
@@ -475,7 +476,7 @@ concommand.Add("ttt_transfer_credits", TransferCredits)
 
 -- Protect against non-TTT weapons that may break the HUD
 function GM:WeaponEquip(wep)
-   if ValidEntity(wep) then
+   if IsValid(wep) then
       -- only remove if they lack critical stuff
       if not wep.Kind then
          wep:Remove()
@@ -501,7 +502,7 @@ function WEPS.HasCustomEquipment()
 
          if roles then
             for _, role in pairs(roles) do
-               if not table.HasValue(DefaultEquipment[role], wep.Classname) then
+               if not table.HasValue(DefaultEquipment[role], WEPS.GetClass(wep)) then
                   return true
                end
             end
@@ -522,4 +523,17 @@ function WEPS.HasCustomEquipment()
    end
 
    return false
+end
+
+-- non-cheat developer commands can reveal precaching the first time equipment
+-- is bought, so trigger it at the start of a round instead
+function WEPS.ForcePrecache()
+   for k, w in pairs(weapons.GetList()) do
+      if w and w.WorldModel then
+         util.PrecacheModel(w.WorldModel)
+      end
+      if w and w.ViewModel then
+         util.PrecacheModel(w.ViewModel)
+      end
+   end
 end

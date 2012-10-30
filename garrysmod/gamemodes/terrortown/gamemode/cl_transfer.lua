@@ -17,10 +17,10 @@ function CreateTransferMenu(parent)
    dsubmit:SetSize(bw, bh)
    dsubmit:SetDisabled(true)
    dsubmit:SetText(GetTranslation("xfer_send"))
-   
+
    local selected_uid = nil
 
-   local dpick = vgui.Create("DMultiChoice", dform)
+   local dpick = vgui.Create("DComboBox", dform)
    dpick.OnSelect = function(s, idx, val, data)
                        if data then
                           selected_uid = data
@@ -53,7 +53,8 @@ function CreateTransferMenu(parent)
                       end
                    end
 
-   dform:AddItem(dpick, dsubmit)
+   dform:AddItem(dpick)
+   dform:AddItem(dsubmit)
 
    dform:Help(LANG.GetParamTranslation("xfer_help", {role = LocalPlayer():GetRoleString()}))
 

@@ -6,11 +6,11 @@ if SERVER then
 end
 
 SWEP.HoldType			= "ar2"
-   
+
 
 if CLIENT then
 
-   SWEP.PrintName			= "M16"			
+   SWEP.PrintName			= "M16"
    SWEP.Slot				= 2
 
    SWEP.Icon = "VGUI/ttt/icon_m16"
@@ -29,7 +29,7 @@ SWEP.Primary.Recoil			= 1.6
 SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "Pistol"
 SWEP.Primary.Damage = 23
-SWEP.Primary.Cone = 0.02
+SWEP.Primary.Cone = 0.018
 SWEP.Primary.ClipSize = 20
 SWEP.Primary.ClipMax = 60
 SWEP.Primary.DefaultClip = 20
@@ -57,15 +57,15 @@ end
 function SWEP:SecondaryAttack()
    if not self.IronSightsPos then return end
    if self.Weapon:GetNextSecondaryFire() > CurTime() then return end
-   
+
    bIronsights = not self:GetIronsights()
-   
+
    self:SetIronsights( bIronsights )
-   
+
    if SERVER then
       self:SetZoom(bIronsights)
    end
-   
+
    self.Weapon:SetNextSecondaryFire(CurTime() + 0.3)
 end
 

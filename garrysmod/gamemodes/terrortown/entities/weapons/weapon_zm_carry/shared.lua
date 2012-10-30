@@ -91,7 +91,7 @@ local function KillVelocity(ent)
    -- for non-ragdolls this will do the same for their single physobj
    SetSubPhysMotionEnabled(ent, false)
 
-   timer.Simple(0, SetSubPhysMotionEnabled, ent, true)
+   timer.Simple(0, function() SetSubPhysMotionEnabled(ent, true) end)
 end
 
 function SWEP:Reset(keep_velocity)
@@ -358,7 +358,7 @@ function SWEP:Pickup()
 
          self.CarryHack:SetModel("models/weapons/w_bugbait.mdl")
 
-         self.CarryHack:SetColor(50, 250, 50, 240)
+         self.CarryHack:SetColor(Color(50, 250, 50, 240))
          self.CarryHack:SetNoDraw(true)
          self.CarryHack:DrawShadow(false)
 
@@ -414,7 +414,7 @@ function SWEP:AllowEntityDrop()
    local ground = ply:GetGroundEntity()
    if ground and (ground:IsWorld() or IsValid(ground)) then return true end
 
-   local diff = (ent:GetPos() - ply:GetShootPos()):Normalize()
+   local diff = (ent:GetPos() - ply:GetShootPos()):GetNormalized()
 
    return down:Dot(diff) <= 0.75
 end
@@ -543,12 +543,12 @@ end
 
 function SWEP:Deploy()
    self:Reset()
-   return self.BaseClass:Deploy()
+   return true
 end
 
 function SWEP:Holster()
    self:Reset()
-   return self.BaseClass:Holster()
+   return true
 end
 
 

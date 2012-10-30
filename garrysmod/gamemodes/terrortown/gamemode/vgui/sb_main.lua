@@ -13,9 +13,15 @@ local GetPTranslation = LANG.GetParamTranslation
 
 include("sb_team.lua")
 
-surface.CreateFont("coolvetica", 20, 400, true, false, "cool_small" )
-surface.CreateFont("coolvetica", 24, 400, true, false, "cool_large" )
-surface.CreateFont("Trebuchet18", 14, 700, true, false, "treb_small" )
+surface.CreateFont("cool_small", {font = "coolvetica",
+                                  size = 20,
+                                  weight = 400})
+surface.CreateFont("cool_large", {font = "coolvetica",
+                                  size = 24,
+                                  weight = 400})
+surface.CreateFont("treb_small", {font = "Trebuchet18",
+                                  size = 14,
+                                  weight = 700})
 
 local logo = surface.GetTextureID("VGUI/ttt/score_logo")
 
@@ -70,21 +76,21 @@ end
 
 function PANEL:Init()
 
-   self.hostdesc = vgui.Create("Label", self)
+   self.hostdesc = vgui.Create("DLabel", self)
    self.hostdesc:SetText(GetTranslation("sb_playing"))
    self.hostdesc:SetContentAlignment(9)
 
-   self.hostname = vgui.Create( "Label", self )
+   self.hostname = vgui.Create( "DLabel", self )
    self.hostname:SetText( GetHostName() )
    self.hostname:SetContentAlignment(6)
-   
-   self.mapchange = vgui.Create("Label", self)
+
+   self.mapchange = vgui.Create("DLabel", self)
    self.mapchange:SetText("Map changes in 00 rounds or in 00:00:00")
    self.mapchange:SetContentAlignment(9)
 
    self.mapchange.Think = function (sf)
                              local r, t = UntilMapChange()
-   
+
                              sf:SetText(GetPTranslation("sb_mapchange",
                                                         {num = r, time = t}))
                              sf:SizeToContents()
@@ -115,17 +121,17 @@ function PANEL:Init()
 
    -- the various score column headers
    self.cols = {}
-   self.cols[1] = vgui.Create( "Label", self )
+   self.cols[1] = vgui.Create( "DLabel", self )
    self.cols[1]:SetText( GetTranslation("sb_ping") )
-   
-   self.cols[2] = vgui.Create( "Label", self )
+
+   self.cols[2] = vgui.Create( "DLabel", self )
    self.cols[2]:SetText( GetTranslation("sb_deaths") )
-   
-   self.cols[3] = vgui.Create( "Label", self )
+
+   self.cols[3] = vgui.Create( "DLabel", self )
    self.cols[3]:SetText( GetTranslation("sb_score") )
 
    if KARMA.IsEnabled() then
-      self.cols[4] = vgui.Create("Label", self)
+      self.cols[4] = vgui.Create("DLabel", self)
       self.cols[4]:SetText(GetTranslation("sb_karma"))
    end
 
@@ -134,8 +140,14 @@ function PANEL:Init()
 end
 
 function PANEL:StartUpdateTimer()
-   if not timer.IsTimer("TTTScoreboardUpdater") then
-      timer.Create( "TTTScoreboardUpdater", 0.3, 0, self.UpdateScoreboard, self )
+   if not timer.Exists("TTTScoreboardUpdater") then
+      timer.Create( "TTTScoreboardUpdater", 0.3, 0,
+                    function()
+                       local pnl = GAMEMODE:GetScoreboardPanel()
+                       if IsValid(pnl) then
+                          pnl:UpdateScoreboard()
+                       end
+                    end)
    end
 end
 
@@ -149,15 +161,15 @@ local y_logo_off = 72
 function PANEL:Paint()
    -- Logo sticks out, so always offset bg
    draw.RoundedBox( 8, 0, y_logo_off, self:GetWide(), self:GetTall() - y_logo_off, colors.bg)
-   
+
    -- Server name is outlined by orange/gold area
    draw.RoundedBox( 8, 0, y_logo_off + 25, self:GetWide(), 32, colors.bar)
 
    -- TTT Logo
    surface.SetTexture( logo )
    surface.SetDrawColor( 255, 255, 255, 255 )
-   surface.DrawTexturedRect( 5, 0, 256, 256 ) 
-   
+   surface.DrawTexturedRect( 5, 0, 256, 256 )
+
 end
 
 function PANEL:PerformLayout()
@@ -189,7 +201,7 @@ function PANEL:PerformLayout()
    self.ply_frame:SetScroll(scrolling)
 
    h = math.Clamp(h, 110 + y_logo_off, ScrH() * 0.95)
-   
+
    local w = math.max(ScrW() * 0.6, 640)
 
    self:SetSize(w, h)
@@ -232,13 +244,13 @@ function PANEL:ApplySchemeSettings()
    self.hostname:SetFont("cool_large")
    self.mapchange:SetFont("treb_small")
 
-   self.hostdesc:SetFGColor(COLOR_WHITE)
-   self.hostname:SetFGColor(COLOR_BLACK)
-   self.mapchange:SetFGColor(COLOR_WHITE)
+   self.hostdesc:SetTextColor(COLOR_WHITE)
+   self.hostname:SetTextColor(COLOR_BLACK)
+   self.mapchange:SetTextColor(COLOR_WHITE)
 
    for k,v in pairs(self.cols) do
       v:SetFont("treb_small")
-      v:SetFGColor(COLOR_WHITE)
+      v:SetTextColor(COLOR_WHITE)
    end
 end
 

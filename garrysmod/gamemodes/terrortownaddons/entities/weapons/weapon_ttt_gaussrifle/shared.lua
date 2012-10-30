@@ -167,8 +167,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone, startpos )
 	-- Owner can die after firebullets
 	if not firstshot or (not IsValid(self.Owner)) or (not self.Owner:Alive()) or self.Owner:IsNPC() then return end
 
-	if ((SinglePlayer() and SERVER) or
-		((not SinglePlayer()) and CLIENT and IsFirstTimePredicted())) then
+	if CLIENT and IsFirstTimePredicted() then
 
 		-- reduce recoil if ironsighting
 		recoil = sights and (recoil * 0.6) or recoil
@@ -181,17 +180,22 @@ end
 
 function SWEP.ScaleDamage( ply, hitgroup, dmginfo )
 	if not SERVER or not dmginfo:IsBulletDamage() then return end
-	
+	local n = 1
+		
 	local att = dmginfo:GetAttacker()
 	if not att or not att:IsPlayer() then return end
-	
+		
 	local wep = att:GetActiveWeapon()
 	if not wep or wep:GetClass() ~= "weapon_ttt_gaussrifle" then return end
-	
+		
 	local len = ply:GetPos():Distance( att:GetPos() )
 	local scale = math.max( math.min( 8.0, ( len - 256 ) / 256 ), 0.125 )
+	
+	local force = dmginfo:GetDamageForce()
+	force:Normalize()
+	
 	dmginfo:ScaleDamage( scale )
-	dmginfo:SetDamageForce( scale * 50 * dmginfo:GetDamageForce():Normalize() )
+	dmginfo:SetDamageForce( force * scale * 50 )
 end
 hook.Add( "ScalePlayerDamage", "GaussScaleDamage", SWEP.ScaleDamage )
 
@@ -466,9 +470,9 @@ if CLIENT then
 				if prog == 1 then
 					text = "FULLY CHARGED"
 				end
-				draw.SimpleText( text, "ScoreboardText", ScrW() / 2, ScrH() * 3 / 4, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( text, "Default", ScrW() / 2, ScrH() * 3 / 4, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			else
-				draw.SimpleText( "NO AMMO", "ScoreboardText", ScrW() / 2, ScrH() * 3 / 4, Color( 255, 0, 0, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "NO AMMO", "Default", ScrW() / 2, ScrH() * 3 / 4, Color( 255, 0, 0, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			end
 		else
 			return self.BaseClass.DrawHUD(self)

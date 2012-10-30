@@ -70,7 +70,7 @@ function ENT:OnTakeDamage(dmginfo)
       local effect = EffectData()
       effect:SetOrigin(self:GetPos())
       util.Effect("cball_explode", effect)
-      WorldSound(zapsound, self:GetPos())
+      sound.Play(zapsound, self:GetPos())
    end
 end
 
@@ -79,35 +79,41 @@ function ENT:ShowSceneForCorpse(corpse)
    local hit = scene.hit_trace
    local dur = self.SceneDuration
 
-   -- line showing bullet trajectory
-   local e = EffectData()
-   e:SetEntity(corpse)
-   e:SetStart(hit.StartPos)
-   e:SetOrigin(hit.HitPos)
-   e:SetMagnitude(hit.HitBox)
-   e:SetScale(dur)
+   if hit then
+      -- line showing bullet trajectory
+      local e = EffectData()
+      e:SetEntity(corpse)
+      e:SetStart(hit.StartPos)
+      e:SetOrigin(hit.HitPos)
+      e:SetMagnitude(hit.HitBox)
+      e:SetScale(dur)
 
-   util.Effect("crimescene_shot", e)
+      util.Effect("crimescene_shot", e)
+   end
 
+   if not scene then return end
 
    for _, dummy_key in pairs({"victim", "killer"}) do
       local dummy = scene[dummy_key]
 
       if dummy then
+         -- Horrible sins committed here to get all the data we need over the
+         -- wire, the pose parameters are going to be truncated etc. but
+         -- everything sort of works out. If you know a better way to get this
+         -- much data to an effect, let me know.
          local e = EffectData()
          e:SetEntity(corpse)
          e:SetOrigin(dummy.pos)
-         e:SetAngle(dummy.ang)
-         e:SetRadius(dummy.sequence)
-         e:SetMagnitude(dummy.cycle)
+         e:SetAngles(dummy.ang)
+         e:SetColor(dummy.sequence)
+         e:SetScale(dummy.cycle)
          e:SetStart(Vector(dummy.aim_yaw, dummy.aim_pitch, dummy.move_yaw))
-         e:SetScale(dur)
-         
+         e:SetRadius(dur)
+         PrintTable(dummy)
          util.Effect("crimescene_dummy", e)
       end
    end
 end
-
 
 local scanloop = Sound("weapons/gauss/chargeloop.wav")
 function ENT:StartScanSound()
@@ -141,7 +147,7 @@ if CLIENT then
 end
 
 function ENT:UseOverride(activator)
-   if ValidEntity(activator) and activator:IsPlayer() then
+   if IsValid(activator) and activator:IsPlayer() then
       if activator:IsActiveDetective() and activator:CanCarryType(WEAPON_EQUIP) then
          self:StopScanSound(true)
          self:Remove()
@@ -160,7 +166,7 @@ end
 
 function ENT:Explode(tr)
    if SERVER then
-      
+
       -- prevent starting effects when round is about to restart
       if GetRoundState() == ROUND_POST then return end
 

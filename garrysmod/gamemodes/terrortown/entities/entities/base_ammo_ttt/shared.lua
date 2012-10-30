@@ -19,7 +19,7 @@ function ENT:RealInit() end -- bw compat
 -- Using self.BaseClass gave weird problems, so stuff has been moved into a fn
 -- Subclasses can easily call this whenever they want to
 function ENT:Initialize()
-   self:SetModel( self.Model )	
+   self:SetModel( self.Model )
 
    self:PhysicsInit( SOLID_VPHYSICS )
    self:SetMoveType( MOVETYPE_VPHYSICS )
@@ -50,7 +50,7 @@ function ENT:PlayerCanPickup(ply)
    if ply == self:GetOwner() then return false end
 
    local ent = self.Entity
-   local phys = ent:GetPhysicsObject()   
+   local phys = ent:GetPhysicsObject()
    local spos = phys:IsValid() and phys:GetPos() or ent:OBBCenter()
    local epos = ply:GetShootPos() -- equiv to EyePos in SDK
 
@@ -66,7 +66,7 @@ function ENT:CheckForWeapon(ply)
       local tbl = {}
       for k,v in pairs(weapons.GetList()) do
          if v and v.AmmoEnt == self:GetClass() then
-            table.insert(tbl, v.Classname)
+            table.insert(tbl, WEPS.GetClass(v))
          end
       end
 
@@ -92,9 +92,9 @@ function ENT:Touch(ent)
             local given = self.AmmoAmount
             given = math.min(given, self.AmmoMax - ammo)
             ent:GiveAmmo( given, self.AmmoType)
-            
+
             self:Remove()
-            
+
             -- just in case remove does not happen soon enough
             self.taken = true
          end

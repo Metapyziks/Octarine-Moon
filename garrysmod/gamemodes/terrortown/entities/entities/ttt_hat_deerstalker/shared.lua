@@ -30,7 +30,7 @@ function ENT:Initialize()
 
    if SERVER then
       self.Wearer = self:GetParent()
-      self:AddEffects(EF_BONEMERGE | EF_BONEMERGE_FASTCULL | EF_PARENT_ANIMATES)
+      self:AddEffects(bit.bor(EF_BONEMERGE, EF_BONEMERGE_FASTCULL, EF_PARENT_ANIMATES))
    end
 end
 
@@ -38,7 +38,7 @@ if SERVER then
    function ENT:OnRemove()
       self:SetBeingWorn(false)
    end
-   
+
    function ENT:Drop(dir)
       local ply = self:GetParent()
 
@@ -63,7 +63,7 @@ if SERVER then
             local pos = ply:GetPos()
             pos.z = pos.z + 68
 
-            self:SetPos(pos)            
+            self:SetPos(pos)
          end
       end
 
@@ -81,7 +81,7 @@ if SERVER then
          else
             phys:ApplyForceCenter(Vector(0, 0, 700) + dir * 500)
          end
-         
+
          phys:AddAngleVelocity(VectorRand() * 200)
 
          phys:Wake()
@@ -89,7 +89,7 @@ if SERVER then
    end
 
    local function TestHat(ply, cmd, args)
-      if server_settings.Bool("sv_cheats", 0) then
+      if cvars.Bool("sv_cheats", 0) then
          local hat = ents.Create("ttt_hat_deerstalker")
 
          hat:SetPos(ply:GetPos() + Vector(0,0,70))

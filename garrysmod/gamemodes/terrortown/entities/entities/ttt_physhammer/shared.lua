@@ -26,7 +26,7 @@ function ENT:Initialize()
       self.Entity:NextThink(CurTime() + 1)
    end
 
-   self:SetColor(55, 50, 250, 255)
+   self:SetColor(Color(55, 50, 250, 255))
 
    self.Stuck = false
    self.PunchMax = 6
@@ -34,10 +34,10 @@ function ENT:Initialize()
 end
 
 function ENT:StickTo(ent)
-   if (not ValidEntity(ent)) or ent:IsPlayer() or ent:GetMoveType() != MOVETYPE_VPHYSICS then return false end
+   if (not IsValid(ent)) or ent:IsPlayer() or ent:GetMoveType() != MOVETYPE_VPHYSICS then return false end
 
    local phys = ent:GetPhysicsObject()
-   if (not ValidEntity(phys)) or (not phys:IsMoveable()) then return false end
+   if (not IsValid(phys)) or (not phys:IsMoveable()) then return false end
 
 --   local norm = self:GetAngles():Up()
 
@@ -55,11 +55,11 @@ function ENT:StickTo(ent)
 end
 
 function ENT:OnRemove()
-   if ValidEntity(self.BallSprite) then
+   if IsValid(self.BallSprite) then
       self.BallSprite:Remove()
    end
 
-   if ValidEntity(self.PunchEntity) then
+   if IsValid(self.PunchEntity) then
       self.PunchEntity:SetPhysicsAttacker(self.PunchEntity)
       self.PunchEntity:SetNWBool("punched", false)
    end
@@ -69,7 +69,7 @@ function ENT:StartEffects()
    -- MAKE IT PRETTY
 
    local sprite = ents.Create("env_sprite")
-   if ValidEntity(sprite) then
+   if IsValid(sprite) then
 --      local angpos = self:GetAttachment(ball)
       -- sometimes attachments don't work (Lua-side) on dedicated servers,
       -- so have to fudge it
@@ -96,7 +96,7 @@ function ENT:StartEffects()
    effect:SetStart(self:GetPos())
    effect:SetOrigin(self:GetPos())
    effect:SetNormal(self:GetAngles():Up())
-   util.Effect("ManhackSparks", effect, true, true)   
+   util.Effect("ManhackSparks", effect, true, true)
 
    if SERVER then
       local ball = self:LookupAttachment("attach_ball")
@@ -117,24 +117,24 @@ if SERVER then
 
          util.BlastDamage(self, self:GetOwner(), pos, 300, 125)
 
-         WorldSound(diesound, pos, 100, 100)
+         sound.Play(diesound, pos, 100, 100)
          self:Remove()
 
 
          local effect = EffectData()
          effect:SetStart(pos)
          effect:SetOrigin(pos)
-         util.Effect("Explosion", effect, true, true) 
+         util.Effect("Explosion", effect, true, true)
       else
          self.PunchRemaining = self.PunchRemaining - 1
 
-         if ValidEntity(self.PunchEntity) and ValidEntity(self.PunchEntity:GetPhysicsObject()) then
+         if IsValid(self.PunchEntity) and IsValid(self.PunchEntity:GetPhysicsObject()) then
             local punchphys = self.PunchEntity:GetPhysicsObject()
 
 
             -- Make physexplosion
             local phexp = ents.Create("env_physexplosion")
-            if ValidEntity(phexp) then
+            if IsValid(phexp) then
                phexp:SetPos(self:GetPos())
                phexp:SetKeyValue("magnitude", 100)
                phexp:SetKeyValue("radius", 128)
@@ -163,7 +163,7 @@ if SERVER then
             effect:SetScale(1)
             util.Effect("ManhackSparks", effect, true, true)
 
-            WorldSound(punchsound, self:GetPos(), 80, 100)
+            sound.Play(punchsound, self:GetPos(), 80, 100)
          end
       end
 

@@ -2,7 +2,7 @@
 -- serverside extensions to player table
 
 local plymeta = FindMetaTable( "Player" )
-if not plymeta then return end
+if not plymeta then Error("FAILED TO FIND PLAYER TABLE") return end
 
 function plymeta:SetRagdollSpec(s)
    if s then
@@ -74,7 +74,7 @@ end
 function plymeta:AddEquipmentItem(id)
    id = tonumber(id)
    if id then
-      self.equipment_items = self.equipment_items | id
+      self.equipment_items = bit.bor(self.equipment_items, id)
       self:SendEquipment()
    end
 end
@@ -125,8 +125,8 @@ function plymeta:StripAll()
    -- standard stuff
    self:StripAmmo()
    self:StripWeapons()
-   
-   -- our stuff 
+
+   -- our stuff
    self:ResetEquipment()
    self:SetCredits(0)
 end
@@ -184,8 +184,8 @@ end
 
 -- Forced specs and latejoin specs should not get points
 function plymeta:ShouldScore()
-   if self:GetForceSpec() then 
-      return false 
+   if self:GetForceSpec() then
+      return false
    elseif self:IsSpec() and self:Alive() then
       return false
    else
@@ -194,7 +194,7 @@ function plymeta:ShouldScore()
 end
 
 function plymeta:RecordKill(victim)
-   if not ValidEntity(victim) then return end
+   if not IsValid(victim) then return end
 
    if not self.kills then
       self.kills = {}
@@ -242,7 +242,8 @@ function plymeta:SendLastWords(dmginfo)
    umsg.End()
 
    -- any longer than this and you're out of luck
-   timer.Simple(2, self.ResetLastWords, self)
+   local ply = self
+   timer.Simple(2, function() ply:ResetLastWords() end)
 end
 
 
@@ -281,13 +282,35 @@ function plymeta:SpawnForRound(dead_only)
    if self:Team() == TEAM_SPEC then
       self:UnSpectate()
    end
-   
+
    self:StripAll()
    self:SetTeam(TEAM_TERROR)
    self:Spawn()
 
    -- tell caller that we spawned
    return true
+end
+
+function plymeta:InitialSpawn()
+   self.has_spawned = false
+
+   -- The team the player spawns on depends on the round state
+   self:SetTeam(GetRoundState() == ROUND_PREP and TEAM_TERROR or TEAM_SPEC)
+
+   -- Change some gmod defaults
+   self:SetCanZoom(false)
+   self:SetJumpPower(160)
+   self:SetSpeed(false)
+   self:SetCrouchedWalkSpeed(0.3)
+
+   -- Always spawn innocent initially, traitor will be selected later
+   self:ResetStatus()
+
+   -- Start off with clean, full karma (unless it can and should be loaded)
+   self:InitKarma()
+
+   -- We never have weapons here, but this inits our equipment state
+   self:StripAll()
 end
 
 function plymeta:KickBan(length, reason)

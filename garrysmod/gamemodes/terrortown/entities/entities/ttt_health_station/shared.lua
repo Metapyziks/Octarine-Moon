@@ -66,7 +66,7 @@ function ENT:Initialize()
    end
    self:SetHealth(200)
 
-   self:SetColor(180, 180, 255, 255)
+   self:SetColor(Color(180, 180, 250, 255))
 
    self:SetStoredHealth(200)
 
@@ -101,7 +101,7 @@ function ENT:GiveHealth(ply, max_heal)
          -- constant clamping, no risks
          local healed = self:TakeFromStorage(math.min(max_heal, dmg))
          local new = math.min(ply:GetMaxHealth(), ply:Health() + healed)
-         
+
          ply:SetHealth(new)
 
          if last_sound_time + 2 < CurTime() then

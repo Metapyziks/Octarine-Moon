@@ -17,7 +17,7 @@ function CORPSE.SetPlayerNick(rag, ply_or_name)
    -- don't have datatable strings, so use a dt entity for common case of
    -- still-connected player, and if the player is gone, fall back to nw string
    local name = ply_or_name
-   if ValidEntity(ply_or_name) then
+   if IsValid(ply_or_name) then
       name = ply_or_name:Nick()
       rag:SetDTEntity(dti.ENT_PLAYER, ply_or_name)
    end
@@ -94,7 +94,7 @@ local function IdentifyBody(ply, rag)
       local vic = player.GetByUniqueID(vicid)
 
       -- is this an unconfirmed dead?
-      if ValidEntity(vic) and (not vic:GetNWBool("body_found", false)) then
+      if IsValid(vic) and (not vic:GetNWBool("body_found", false)) then
          LANG.Msg("body_confirm", {finder = finder, victim = vic:Nick()})
 
          -- update scoreboard status
@@ -110,9 +110,9 @@ end
 
 -- Covert identify concommand for traitors
 local function IdentifyCommand(ply, cmd, args)
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
    if #args != 2 then return end
-   
+
    local eidx = tonumber(args[1])
    local id = tonumber(args[2])
    if (not eidx) or (not id) then return end
@@ -126,7 +126,7 @@ local function IdentifyCommand(ply, cmd, args)
    ply.search_id = nil
 
    local rag = Entity(eidx)
-   if ValidEntity(rag) and rag:GetPos():Distance(ply:GetPos()) < 128 then
+   if IsValid(rag) and rag:GetPos():Distance(ply:GetPos()) < 128 then
       if not CORPSE.GetFound(rag, false) then
          IdentifyBody(ply, rag)
       end
@@ -139,7 +139,7 @@ local function CallDetective(ply, cmd, args)
    if not IsValid(ply) then return end
    if #args != 1 then return end
    if not ply:IsActive() then return end
-   
+
    local eidx = tonumber(args[1])
    if not eidx then return end
 
@@ -161,7 +161,7 @@ concommand.Add("ttt_call_detective", CallDetective)
 
 -- Send a usermessage to client containing search results
 function CORPSE.ShowSearch(ply, rag, covert, long_range)
-   if not ValidEntity(ply) or not ValidEntity(rag) then return end
+   if not IsValid(ply) or not IsValid(rag) then return end
 
    if rag:IsOnFire() then
       LANG.Msg(ply, "body_burning")
@@ -231,7 +231,7 @@ function CORPSE.ShowSearch(ply, rag, covert, long_range)
    end
 
    -- If found by detective, send to all, else just the finder
-   local receiver = ply 
+   local receiver = ply
    if ply:IsActiveDetective() then receiver = nil end
 
    -- Send a message with basic info
@@ -335,7 +335,7 @@ local function GetSceneData(victim, attacker, dmginfo)
    end
 
    scene.victim = GetSceneDataFromPlayer(victim)
-   
+
    if IsValid(attacker) and attacker:IsPlayer() then
       scene.killer = GetSceneDataFromPlayer(attacker)
 
@@ -362,7 +362,7 @@ function CORPSE.Create(ply, attacker, dmginfo)
       if not IsValid(ply) then return end
 
       local rag = ents.Create("prop_ragdoll")
-      if not ValidEntity(rag) then return nil end
+      if not IsValid(rag) then return nil end
 
       rag:SetPos(ply:GetPos())
       rag:SetModel(ply:GetModel())
@@ -393,7 +393,7 @@ function CORPSE.Create(ply, attacker, dmginfo)
       local wep = util.WeaponFromDamage(dmginfo)
       rag.dmgwep = IsValid(wep) and wep:GetClass() or ""
 
-      rag.was_headshot = ply.was_headshot
+      rag.was_headshot = (ply.was_headshot and dmginfo:IsBulletDamage())
       rag.time = CurTime()
       rag.kills = table.Copy(ply.kills)
 
@@ -415,25 +415,23 @@ function CORPSE.Create(ply, attacker, dmginfo)
 
       for i=0, num do
          local bone = rag:GetPhysicsObjectNum(i)
-         if ValidEntity(bone) then
+         if IsValid(bone) then
             local bp, ba = ply:GetBonePosition(rag:TranslatePhysBoneToBone(i))
             if bp and ba then
                bone:SetPos(bp)
-               bone:SetAngle(ba)
+               bone:SetAngles(ba)
             end
 
             -- not sure if this will work:
             bone:SetVelocity(v)
-
-            -- increase their weight
---            bone:SetMass( 40 )
          end
       end
 
       -- create advanced death effects (knives)
       if ply.effect_fn then
          -- next frame, after physics is happy for this ragdoll
-         timer.Simple(0, ply.effect_fn, rag)
+         local efn = ply.effect_fn
+         timer.Simple(0, function() efn(rag) end)
       end
 
       return rag -- we'll be speccing this

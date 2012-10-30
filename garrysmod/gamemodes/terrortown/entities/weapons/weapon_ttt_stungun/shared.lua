@@ -26,7 +26,7 @@ SWEP.WeaponID = AMMO_STUN
 SWEP.CanBuy = {ROLE_DETECTIVE}
 SWEP.LimitedStock = false
 
-SWEP.Primary.Damage = 7
+SWEP.Primary.Damage = 9
 SWEP.Primary.Delay = 0.1
 SWEP.Primary.Cone = 0.02
 SWEP.Primary.ClipSize = 30
@@ -53,7 +53,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 
    numbul = numbul or 1
    cone   = cone   or 0.01
-   
+
    -- 10% accuracy bonus when sighting
    cone = sights and (cone * 0.9) or cone
 
@@ -75,7 +75,7 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
                               edata:SetEntity(ent)
                               edata:SetMagnitude(3)
                               edata:SetScale(2)
-                              
+
                               util.Effect("TeslaHitBoxes", edata)
 
                               if SERVER and ent:IsPlayer() then
@@ -93,24 +93,24 @@ function SWEP:ShootBullet( dmg, recoil, numbul, cone )
 
    self.Owner:FireBullets( bullet )
    self.Weapon:SendWeaponAnim(self.PrimaryAnim)
-   
+
    -- Owner can die after firebullets, giving an error at muzzleflash
    if not IsValid(self.Owner) or not self.Owner:Alive() then return end
-   
+
    self.Owner:MuzzleFlash()
    self.Owner:SetAnimation( PLAYER_ATTACK1 )
-   
+
    if self.Owner:IsNPC() then return end
-   
-   if ((SinglePlayer() and SERVER) or
-       ((not SinglePlayer()) and CLIENT and IsFirstTimePredicted() )) then
-      
+
+   if ((game.SinglePlayer() and SERVER) or
+       ((not game.SinglePlayer()) and CLIENT and IsFirstTimePredicted() )) then
+
       -- reduce recoil if ironsighting
       recoil = sights and (recoil * 0.75) or recoil
 
       local eyeang = self.Owner:EyeAngles()
       eyeang.pitch = eyeang.pitch - recoil
       self.Owner:SetEyeAngles( eyeang )
-      
+
    end
 end

@@ -12,13 +12,13 @@ PANEL.Votes = {
       txt = "contvote_change",
       keytxt = "[NUMPAD 2]",
       want = true
-   }     
+   }
 };
 
 function PANEL:Init()
    self:SetSkin( GAMEMODE.HudSkin )
    self:ParentToHUD()
-   
+
    self.ControlCanvas = vgui.Create( "Panel", self )
    self.ControlCanvas:SetPaintBackgroundEnabled(false)
    self.ControlCanvas:SetKeyboardInputEnabled( false )
@@ -51,13 +51,13 @@ function PANEL:Init()
    end
 
    self.Peeps = {}
-   
-   for i =1, MaxPlayers() do
+
+   for i =1, game.MaxPlayers() do
       self.Peeps[i] = vgui.Create( "DImage", self.ctrlList:GetCanvas() )
       self.Peeps[i]:SetSize( 16, 16 )
       --self.Peeps[i]:SetZPos( 1000 )
       self.Peeps[i]:SetVisible( false )
-      self.Peeps[i]:SetImage( "gui/silkicons/emoticon_smile" )
+      self.Peeps[i]:SetImage( "icon16/emoticon_smile.png" )
       self.Peeps[i]:SetImageColor(Color(255,255,255, 100))
    end
 
@@ -69,15 +69,15 @@ function PANEL:PerformLayout()
    self:SetSize( 310, 60 )
 
    self:CenterHorizontal()
-   
+
    self.ControlCanvas:StretchToParent( 0, 0, 0, 0 )
    self.ControlCanvas:SetZPos( 0 )
-   
+
    self.ctrlList:StretchToParent( 2, 4, 2, 4 )
 end
 
 function PANEL:ResetPeeps()
-   for i=1, MaxPlayers() do
+   for i=1, game.MaxPlayers() do
       self.Peeps[i]:SetPos( math.random( 0, 600 ), -16 )
       self.Peeps[i]:SetVisible( false )
       self.Peeps[i].want = nil
@@ -91,7 +91,7 @@ function PANEL:FindWantBar(want)
 end
 
 function PANEL:PeepThink( peep, ent )
-   if not IsValid(ent) then 
+   if not IsValid(ent) then
       peep:SetVisible( false )
       return
    end
@@ -102,18 +102,18 @@ function PANEL:PeepThink( peep, ent )
       peep.CurPos = nil
 
       if ent == LocalPlayer() then
-         peep:SetImage( "gui/silkicons/star" )
+         peep:SetImage( "icon16/star.png" )
       end
    end
 
    peep.want = ent:GetNWString( "WantsVote", false )
 
-   local bar = self:FindWantBar( peep.want ) 
+   local bar = self:FindWantBar( peep.want )
    if IsValid(bar) then
       bar.numvotes = bar.numvotes + 1
 
       local vNewPos = Vector( (bar.x + bar:GetWide()) - 15 * bar.numvotes - 4, bar.y + ( bar:GetTall() * 0.5 - 8 ), 0 )
-      
+
       if ( !peep.CurPos || peep.CurPos != vNewPos ) then
          peep:MoveTo( vNewPos.x, vNewPos.y, 0.2 )
          peep.CurPos = vNewPos
@@ -129,7 +129,7 @@ function PANEL:Think()
       v.numvotes = 0
    end
 
-   for i=1, MaxPlayers() do
+   for i=1, game.MaxPlayers() do
       self:PeepThink( self.Peeps[i], Entity(i) )
    end
 end

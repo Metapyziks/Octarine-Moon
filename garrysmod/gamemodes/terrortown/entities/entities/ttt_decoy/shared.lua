@@ -65,7 +65,7 @@ function ENT:OnTakeDamage(dmginfo)
       local effect = EffectData()
       effect:SetOrigin(self:GetPos())
       util.Effect("cball_explode", effect)
-      WorldSound(zapsound, self:GetPos())
+      sound.Play(zapsound, self:GetPos())
 
       if IsValid(self:GetOwner()) then
          LANG.Msg(self:GetOwner(), "decoy_broken")

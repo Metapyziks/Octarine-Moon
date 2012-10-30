@@ -88,7 +88,7 @@ local throwsound = Sound( "Weapon_SLAM.SatchelThrow" )
 function SWEP:BeaconDrop()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -99,7 +99,7 @@ function SWEP:BeaconDrop()
       local vthrow = vvel + vang * 200
 
       local beacon = ents.Create("ttt_beacon")
-      if ValidEntity(beacon) then
+      if IsValid(beacon) then
          beacon:SetPos(vsrc + vang * 10)
          beacon:SetOwner(ply)
          beacon:Spawn()
@@ -114,7 +114,7 @@ function SWEP:BeaconDrop()
 
          beacon:PhysWake()
          local phys = beacon:GetPhysicsObject()
-         if ValidEntity(phys) then
+         if IsValid(phys) then
             phys:SetVelocity(vthrow)
          end   
 
@@ -128,7 +128,7 @@ end
 function SWEP:BeaconStick()
    if SERVER then
       local ply = self.Owner
-      if not ValidEntity(ply) then return end
+      if not IsValid(ply) then return end
 
       if self.Planted then return end
 
@@ -139,7 +139,7 @@ function SWEP:BeaconStick()
 
       if tr.HitWorld then
          local beacon = ents.Create("ttt_beacon")
-         if ValidEntity(beacon) then
+         if IsValid(beacon) then
             beacon:PointAtEntity(ply)
 
             local tr_ent = util.TraceEntity({start=spos, endpos=epos, filter=ignore, mask=MASK_SOLID}, beacon)
@@ -157,7 +157,7 @@ function SWEP:BeaconStick()
                beacon:Spawn()
                
                local phys = beacon:GetPhysicsObject()
-               if ValidEntity(phys) then
+               if IsValid(phys) then
                   phys:EnableMotion(false)
                end
 
@@ -199,7 +199,7 @@ function SWEP:Reload()
 end
 
 function SWEP:OnRemove()
-   if CLIENT and ValidEntity(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
+   if CLIENT and IsValid(self.Owner) and self.Owner == LocalPlayer() and self.Owner:Alive() then
       RunConsoleCommand("lastinv")
    end
 end
@@ -228,7 +228,7 @@ end
 
 -- not able to do DrawModel stuff in Deploy, so here's a hack
 function SWEP:Think()
-   if SERVER and not hidden and ValidEntity(self.Owner) and self.Owner:GetActiveWeapon() == self.Weapon then
+   if SERVER and not hidden and IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self.Weapon then
       self.Owner:DrawViewModel(false)
       self.Owner:DrawWorldModel(false)
       hidden = true

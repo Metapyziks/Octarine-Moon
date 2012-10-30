@@ -22,7 +22,7 @@ end
 function PANEL:OnMousePressed( mcode )
    if mcode == MOUSE_LEFT then
       self:DoClick()
-      self.animPress:Start( 0.2 )
+      self.animPress:Start(0.1)
    end
 end
 
@@ -60,10 +60,9 @@ function PANEL:PaintOverHovered()
 end
 
 function PANEL:PerformLayout()
-
+   if self.animPress:Active() then return end
    self:SetSize( self.m_iIconSize, self.m_iIconSize )
    self.Icon:StretchToParent( 0, 0, 0, 0 )
-
 end
 
 function PANEL:SetIcon( icon )
@@ -93,7 +92,7 @@ function PANEL:PressedAnim( anim, delta, data )
       return
    end
 
-   local border = math.sin( delta * math.pi ) * ( self.m_iIconSize * 0.1 )
+   local border = math.sin( delta * math.pi ) * (self.m_iIconSize * 0.05 )
    self.Icon:StretchToParent( border, border, border, border )
 
 end
@@ -121,11 +120,13 @@ function PANEL:AddLayer(pnl)
 end
 
 function PANEL:PerformLayout()
+   if self.animPress:Active() then return end
    self:SetSize( self.m_iIconSize, self.m_iIconSize )
    self.Icon:StretchToParent( 0, 0, 0, 0 )
 
    for _, p in ipairs(self.Layers) do
       p:SetPos(0, 0)
+      p:InvalidateLayout()
    end
 end
 

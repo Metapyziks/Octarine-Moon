@@ -4,23 +4,7 @@ GM.Name = "Trouble in Terrorist Town"
 GM.Author = "Bad King Urgrain"
 GM.Email = "thegreenbunny@gmail.com"
 GM.Website = "ttt.badking.net"
-GM.Version = "28"
-
--- This is for Fretta but won't interfere with anything. Many of them will
--- probably go unused due to overrides but I'm lazy.
-GM.Help = "Traitors must try to kill all Innocent Terrorists before their treachery is found out!"
-GM.TeamBased = false
-GM.AllowAutoTeam = false
-GM.AllowSpectating = true
-GM.SelectClass = false
-GM.NoPlayerDamage = false
-GM.NoPlayerSelfDamage = false
-GM.NoPlayerTeamDamage = true
-GM.NoPlayerPlayerDamage = false
-GM.NoNonPlayerPlayerDamage = false
-GM.TakeFragOnSuicide = true
-GM.SelectColor = false
-GM.NoAutomaticSpawning = true -- doing our own spawning, thanks
+GM.Version = "29"
 
 GM.Customized = false
 
@@ -84,14 +68,6 @@ include("util.lua")
 include("lang_shd.lua") -- uses some of util
 include("equip_items_shd.lua")
 
--- Install the Fretta bits and bobs we use, while overriding/removing the rest
--- (ie. most of it)
-if SERVER then
-   include("fretta_must_die.lua")
-elseif CLIENT then
-   include("cl_fretta_must_die.lua")
-end
-
 function DetectiveMode() return GetGlobalBool("ttt_detective", false) end
 function HasteMode() return GetGlobalBool("ttt_haste", false) end
 
@@ -122,7 +98,7 @@ end
 
 -- Kill footsteps on player and client
 function GM:PlayerFootstep(ply, pos, foot, sound, volume, rf)
-   if ValidEntity(ply) and (ply:Crouching() or ply:GetMaxSpeed() < 150) then
+   if IsValid(ply) and (ply:Crouching() or ply:GetMaxSpeed() < 150) then
       -- do not play anything, just prevent normal sounds from playing
       return true
    end

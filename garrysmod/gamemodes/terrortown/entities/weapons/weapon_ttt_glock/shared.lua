@@ -2,9 +2,9 @@
 if SERVER then
    AddCSLuaFile( "shared.lua" )
 end
-   
+
 SWEP.HoldType = "pistol"
-   
+
 
 if CLIENT then
    SWEP.PrintName = "Glock"
@@ -18,9 +18,9 @@ SWEP.WeaponID = AMMO_GLOCK
 
 SWEP.Base = "weapon_tttbase"
 SWEP.Primary.Recoil	= 0.9
-SWEP.Primary.Damage = 10
+SWEP.Primary.Damage = 12
 SWEP.Primary.Delay = 0.10
-SWEP.Primary.Cone = 0.03
+SWEP.Primary.Cone = 0.028
 SWEP.Primary.ClipSize = 20
 SWEP.Primary.Automatic = true
 SWEP.Primary.DefaultClip = 20

@@ -53,16 +53,16 @@ end
 -- Round start info popup
 function ShowRoundStartPopup()
    for k, v in pairs(player.GetAll()) do
-      if ValidEntity(v) and v:Team() == TEAM_TERROR and v:Alive() then
+      if IsValid(v) and v:Team() == TEAM_TERROR and v:Alive() then
          v:ConCommand("ttt_cl_startpopup")
       end
-   end   
+   end
 end
 
 local function GetPlayerFilter(pred)
    local filter = RecipientFilter()
    for k, v in pairs(player.GetAll()) do
-      if ValidEntity(v) and pred(v) then
+      if IsValid(v) and pred(v) then
          filter:AddPlayer(v)
       end
    end
@@ -94,10 +94,10 @@ local mumbles = {"mumble", "mm", "hmm", "hum", "mum", "mbm", "mble", "ham", "mam
 -- While a round is active, spectators can only talk among themselves. When they
 -- try to speak to all players they could divulge information about who killed
 -- them. So we mumblify them. In detective mode, we shut them up entirely.
-function GM:PlayerSay(ply, text, to_all)
-   if not ValidEntity(ply) then return end
+function GM:PlayerSay(ply, text, team_only)
+   if not IsValid(ply) then return end
 
-   if not to_all and ply:Team() != TEAM_SPEC and GetRoundState() == ROUND_ACTIVE then
+   if team_only and ply:Team() != TEAM_SPEC and GetRoundState() == ROUND_ACTIVE then
       if ply:IsSpecial() then
          -- traitor chat handling
          RoleChatMsg(ply, ply:GetRole(), text)
@@ -108,14 +108,14 @@ function GM:PlayerSay(ply, text, to_all)
       return ""
    end
 
-   if to_all and GetRoundState() == ROUND_ACTIVE and ply:Team() == TEAM_SPEC then
+   if (not team_only) and GetRoundState() == ROUND_ACTIVE and ply:Team() == TEAM_SPEC then
       if DetectiveMode() then
          LANG.Msg(ply, "spec_teamchat_hint")
          return ""
       end
 
       if not GetConVar("ttt_limit_spectator_chat"):GetBool() then
-         return
+         return text
       end
 
       local filtered = {}
@@ -169,7 +169,7 @@ function GM:PlayerCanHearPlayersVoice( listener, speaker )
    if speaker:IsSpec() and (not listener:IsSpec()) and limit and GetRoundState() == ROUND_ACTIVE then
       return false, false
    end
-   
+
    -- Specific mute
    if listener:IsSpec() and listener.mute_team == speaker:Team() then
       return false, false
@@ -198,7 +198,7 @@ end
 local function SendTraitorVoiceState(speaker, state)
    -- send umsg to living traitors that this is traitor-only talk
    local rf = GetTraitorFilter(true)
-   
+
    -- tiny umsg in the hope of it arriving asap
    umsg.Start("tvo", rf)
    umsg.Short(speaker:EntIndex())
@@ -208,10 +208,10 @@ end
 
 
 local function TraitorGlobalVoice(ply, cmd, args)
-   if not ValidEntity(ply) or not ply:IsActiveTraitor() then return end
+   if not IsValid(ply) or not ply:IsActiveTraitor() then return end
    if not #args == 1 then return end
    local state = tonumber(args[1])
-   
+
    ply.traitor_gvoice = (state == 1)
 
    SendTraitorVoiceState(ply, ply.traitor_gvoice)
@@ -219,7 +219,7 @@ end
 concommand.Add("tvog", TraitorGlobalVoice)
 
 local function MuteTeam(ply, cmd, args)
-   if not ValidEntity(ply) then return end
+   if not IsValid(ply) then return end
    if not #args == 1 and tonumber(args[1]) then return end
    if not ply:IsSpec() then
       ply.mute_team = -1
@@ -245,7 +245,7 @@ local LastWordContext = {
 
 local function LastWordsMsg(ply, words)
    -- only append "--" if there's no ending interpunction
-   local final = string.match(words, "[\.\!\?]$") != nil
+   local final = string.match(words, "[\\.\\!\\?]$") != nil
 
    -- add optional context relating to death type
    local context = LastWordContext[ply.death_type] or ""
@@ -257,7 +257,7 @@ local function LastWordsMsg(ply, words)
 end
 
 local function LastWords(ply, cmd, args)
-   if ValidEntity(ply) and (not ply:Alive()) and #args > 1 then
+   if IsValid(ply) and (not ply:Alive()) and #args > 1 then
       local id = tonumber(args[1])
       if id and ply.last_words_id and id == ply.last_words_id then
          -- never allow multiple last word stuff

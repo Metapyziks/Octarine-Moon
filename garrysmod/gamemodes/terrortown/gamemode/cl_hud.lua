@@ -12,10 +12,15 @@ local GetLang = LANG.GetUnsafeLanguageTable
 local interp = string.Interp
 
 -- Fonts
-surface.CreateFont("Trebuchet24", 28, 1000, true, false, "TraitorState")
-surface.CreateFont("Trebuchet24", 24, 800, true, false, "TimeLeft")
-surface.CreateFont("Trebuchet24", 24, 750, true, false, "HealthAmmo")
-
+surface.CreateFont("TraitorState", {font = "Trebuchet24",
+                                    size = 28,
+                                    weight = 1000})
+surface.CreateFont("TimeLeft",     {font = "Trebuchet24",
+                                    size = 24,
+                                    weight = 800})
+surface.CreateFont("HealthAmmo",   {font = "Trebuchet24",
+                                    size = 24,
+                                    weight = 750})
 -- Color presets
 local bg_colors = {
    background_main = Color(0, 0, 10, 200),
@@ -277,7 +282,7 @@ local function InfoPaint(client)
          if (not is_traitor) or (math.ceil(CurTime()) % 7 <= 2) then
             -- innocent or blinking "overtime"
             text = L.overtime
-            font = "Trebuchet19"
+            font = "Trebuchet18"
 
             -- need to hack the position a little because of the font switch
             ry = ry + 5

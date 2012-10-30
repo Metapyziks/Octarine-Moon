@@ -5,15 +5,16 @@
 -- could make it a module but meh
 LANG = {}
 
-IncludeClientFile("cl_lang.lua")
+util.IncludeClientFile("cl_lang.lua")
 
 -- Add all lua files in our /lang/ dir
 local dir = GM.FolderName or "terrortown"
-for _, fname in pairs(file.FindInLua(dir .. "/gamemode/lang/*.lua")) do
+local files, dirs = file.Find(dir .. "/gamemode/lang/*.lua", "LUA" )
+for _, fname in pairs(files) do
    local path = "lang/" .. fname
    -- filter out directories and temp files (like .lua~)
-   if (not file.IsDir(path)) and string.Right(fname, 3) == "lua" then
-      IncludeClientFile(path)
+   if string.Right(fname, 3) == "lua" then
+      util.IncludeClientFile(path)
       MsgN("Included TTT language file: " .. fname)
    end
 end
@@ -53,14 +54,14 @@ if SERVER then
 
       if c > 0 then
          umsg.Char(c)
-         
+
          for k, v in pairs(params) do
             -- assume keys are strings, but vals may be numbers
             umsg.String(k)
             umsg.String(tostring(v))
          end
       end
-      
+
       umsg.End()
    end
 
