@@ -149,7 +149,7 @@ hook.Add("TTTEndRound", "ttt_damagelog_save_hook", SaveDamageLog)
 function DamageLog(txt)
    local t = math.max(0, CurTime() - GAMEMODE.RoundStartTime)
 
-   txt = string.FormattedTime(t, "%02i:%02i.%02i - ") .. txt
+   txt = util.FormatTime(t, "%02i:%02i.%02i - ") .. txt
    ServerLog(txt .. "\n")
 
    if dmglog_console:GetBool() or dmglog_save:GetBool() then

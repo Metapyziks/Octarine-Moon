@@ -52,6 +52,9 @@ function PANEL:Init()
    self.nick = vgui.Create("DLabel", self)
    self.nick:SetMouseInputEnabled(false)
 
+   self.voice = vgui.Create("DImageButton", self)
+   self.voice:SetSize(16,16)
+
    self:SetCursor( "hand" )
 end
 
@@ -135,6 +138,12 @@ function PANEL:SetPlayer(ply)
       self:InvalidateLayout()
    end
 
+   self.voice.DoClick = function()
+                           if IsValid(ply) and ply != LocalPlayer() then
+                              ply:SetMuted(not ply:IsMuted())
+                           end
+                        end
+
    self:UpdatePlayerData()
 end
 
@@ -176,6 +185,13 @@ function PANEL:UpdatePlayerData()
 
    if self.info then
       self.info:UpdatePlayerData()
+   end
+
+   if self.Player != LocalPlayer() then
+      local muted = self.Player:IsMuted()
+      self.voice:SetImage(muted and "icon16/sound_mute.png" or "icon16/sound.png")
+   else
+      self.voice:Hide()
    end
 end
 
@@ -232,6 +248,11 @@ function PANEL:PerformLayout()
    self.nick:SetPos(SB_ROW_HEIGHT + 10, (SB_ROW_HEIGHT - self.nick:GetTall()) / 2)
 
    self:LayoutColumns()
+
+   self.voice:SetVisible(not self.open)
+   self.voice:SetSize(16, 16)
+   self.voice:DockMargin(4, 4, 4, 4)
+   self.voice:Dock(RIGHT)
 end
 
 function PANEL:DoClick(x, y)

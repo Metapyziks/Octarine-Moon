@@ -21,7 +21,7 @@ end
 
 function TBHUD:CacheEnts()
    if IsValid(LocalPlayer()) and LocalPlayer():IsActiveTraitor() then
-
+      self.buttons = {}
       for _, ent in pairs(ents.FindByClass("ttt_traitor_button")) do
          if IsValid(ent) then
             self.buttons[ent:EntIndex()] = ent
@@ -77,7 +77,7 @@ local GetPTranslation = LANG.GetParamTranslation
 function TBHUD:Draw(client)
    if self.buttons_count != 0 then
       surface.SetTexture(tbut_normal)
-      
+
       -- we're doing slowish distance computation here, so lots of probably
       -- ineffective micro-optimization
       local plypos = client:GetPos()
@@ -89,7 +89,7 @@ function TBHUD:Draw(client)
 
       -- draw icon on HUD for every button within range
       for k, but in pairs(self.buttons) do
-         if IsValid(but) then
+         if IsValid(but) and but.IsUsable then
             pos = but:GetPos()
             scrpos = pos:ToScreen()
 
@@ -127,7 +127,7 @@ function TBHUD:Draw(client)
             local scrpos = focus_ent:GetPos():ToScreen()
 
             local sz = 16
-            
+
             -- redraw in-focus version of icon
             surface.SetTexture(tbut_focus)
             surface.SetDrawColor(255, 255, 255, 200)
@@ -156,6 +156,6 @@ function TBHUD:Draw(client)
             surface.SetTextPos(x, y)
             surface.DrawText(GetPTranslation("tbut_help", {key = use_key}))
          end
-      end         
+      end
    end
 end

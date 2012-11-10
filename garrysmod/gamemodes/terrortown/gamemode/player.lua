@@ -7,7 +7,6 @@ local player = player
 local timer = timer
 local pairs = pairs
 
-CreateConVar("ttt_server_ragdolls", "1", FCVAR_CHEAT)
 CreateConVar("ttt_bots_are_spectators", "0", FCVAR_ARCHIVE)
 CreateConVar("ttt_dyingshot", "0")
 
@@ -16,6 +15,9 @@ CreateConVar("ttt_killer_dna_basetime", "100")
 
 -- First spawn on the server
 function GM:PlayerInitialSpawn( ply )
+   if not GAMEMODE.cvars_init then
+      GAMEMODE:InitCvars()
+   end
 
    ply:InitialSpawn()
 

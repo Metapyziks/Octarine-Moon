@@ -7,7 +7,7 @@ KARMA.RememberedPlayers = {}
 
 -- Convars, more convenient access than GetConVar bla bla
 KARMA.cv = {}
-KARMA.cv.enabled     = CreateConVar("ttt_karma", "1")
+KARMA.cv.enabled     = CreateConVar("ttt_karma", "1", FCVAR_ARCHIVE)
 KARMA.cv.strict      = CreateConVar("ttt_karma_strict", "1")
 KARMA.cv.starting    = CreateConVar("ttt_karma_starting", "1000")
 KARMA.cv.max         = CreateConVar("ttt_karma_max", "1000")
@@ -199,7 +199,7 @@ function KARMA.RoundIncrement()
    local cleanbonus = config.clean:GetFloat()
 
    for _, ply in pairs(player.GetAll()) do
-      local bonus = healbonus + (ply:GetCleanRound() and cleanbonus or 0)      
+      local bonus = healbonus + (ply:GetCleanRound() and cleanbonus or 0)
       KARMA.GiveReward(ply, bonus)
 
       if IsDebug() then
@@ -299,7 +299,7 @@ function KARMA.Remember(ply)
 end
 
 function KARMA.Recall(ply)
-   if config.persist:GetBool()then 
+   if config.persist:GetBool()then
       ply.delay_karma_recall = not ply:IsFullyAuthenticated()
 
       if ply:IsFullyAuthenticated() then
@@ -356,5 +356,5 @@ function KARMA.PrintAll(printfn)
                      ply:Nick(),
                      ply:GetLiveKarma(), ply:GetBaseKarma(),
                      ply:GetDamageFactor() * 100))
-   end   
+   end
 end

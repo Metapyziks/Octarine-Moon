@@ -100,7 +100,7 @@ CreateConVar("ttt_use_weapon_spawn_scripts", "1")
 
 CreateConVar("ttt_always_use_mapcycle", "0")
 
-CreateConVar("ttt_round_limit", "6", FCVAR_NOTIFY + FCVAR_REPLICATED)
+CreateConVar("ttt_round_limit", "6", FCVAR_ARCHIVE + FCVAR_NOTIFY + FCVAR_REPLICATED)
 CreateConVar("ttt_time_limit_minutes", "75", FCVAR_NOTIFY + FCVAR_REPLICATED)
 
 CreateConVar("ttt_idle_limit", "180", FCVAR_NOTIFY)
@@ -155,19 +155,14 @@ function GM:Initialize()
    GAMEMODE.RoundStartTime = 0
 
    GAMEMODE.DamageLog = {}
-
    GAMEMODE.LastRole = {}
+   GAMEMODE.playermodel = GetRandomPlayerModel()
 
-   -- Initialize game state that is synced with client
+   -- Delay reading of cvars until config has definitely loaded
+   GAMEMODE.cvar_init = false
+
    SetGlobalFloat("ttt_round_end", -1)
    SetGlobalFloat("ttt_haste_end", -1)
-   SetGlobalInt("ttt_rounds_left", GetConVar("ttt_round_limit"):GetInt())
-
-   GAMEMODE:SyncGlobals()
-
-   KARMA.InitState()
-
-   GAMEMODE.playermodel = GetRandomPlayerModel()
 
    -- For the paranoid
    math.randomseed(os.time())
@@ -194,6 +189,17 @@ function GM:InitPostEntity()
    self.Customized = WEPS.HasCustomEquipment()
 
    self:UpdateServerTags()
+end
+
+-- Used to do this in Initialize, but server cfg has not always run yet by that
+-- point.
+function GM:InitCvars()
+   -- Initialize game state that is synced with client
+   SetGlobalInt("ttt_rounds_left", GetConVar("ttt_round_limit"):GetInt())
+   GAMEMODE:SyncGlobals()
+   KARMA.InitState()
+
+   self.cvar_init = true
 end
 
 function GM:GetGameDescription() return self.Name end

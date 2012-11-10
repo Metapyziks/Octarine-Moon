@@ -23,7 +23,7 @@ function EFFECT:Init(data)
 
    local r = 28 / 2 -- hardcoded because stuff like :BoundingRadius won't work here
 
-   self.EndScale = Vector() * (self.Radius / r)
+   self.EndScale = self.Radius / r
 end
 
 function EFFECT:Think()

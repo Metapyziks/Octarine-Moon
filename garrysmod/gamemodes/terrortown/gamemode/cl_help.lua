@@ -3,7 +3,7 @@
 local GetTranslation = LANG.GetTranslation
 local GetPTranslation = LANG.GetParamTranslation
 
-CreateConVar("ttt_spectator_mode", "0")
+CreateConVar("ttt_spectator_mode", "0", FCVAR_ARCHIVE)
 CreateConVar("ttt_mute_team_check", "0")
 
 CreateClientConVar("ttt_avoid_detective", "0", true, true)
@@ -60,11 +60,15 @@ function HELPSCRN:Show()
    dgui:CheckBox(GetTranslation("set_tips"), "ttt_tips_enable")
 
    cb = dgui:NumSlider(GetTranslation("set_startpopup"), "ttt_startpopup_duration", 0, 60, 0)
-   cb.Label:SetWrap(true)
+   if cb.Label then
+      cb.Label:SetWrap(true)
+   end
    cb:SetTooltip(GetTranslation("set_startpopup_tip"))
 
    cb = dgui:NumSlider(GetTranslation("set_cross_opacity"), "ttt_ironsights_crosshair_opacity", 0, 1, 1)
-   cb.Label:SetWrap(true)
+   if cb.Label then
+      cb.Label:SetWrap(true)
+   end
    cb:SetTooltip(GetTranslation("set_cross_opacity"))
 
    dgui:CheckBox(GetTranslation("set_cross_disable"), "ttt_disable_crosshair")

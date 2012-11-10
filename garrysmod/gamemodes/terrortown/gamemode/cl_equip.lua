@@ -500,3 +500,12 @@ local function ReceiveBought(um)
 end
 usermessage.Hook("bought", ReceiveBought)
 
+-- Player received the item he has just bought, so run clientside init
+local function ReceiveBoughtItem(um)
+   local is_item = um:ReadBool()
+   local id = is_item and um:ReadShort() or um:ReadString()
+
+   -- I can imagine custom equipment wanting this, so making a hook
+   hook.Run("TTTBoughtItem", is_item, id)
+end
+usermessage.Hook("bought_item", ReceiveBoughtItem)

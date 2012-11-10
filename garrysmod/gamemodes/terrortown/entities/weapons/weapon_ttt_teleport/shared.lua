@@ -24,7 +24,7 @@ end
 SWEP.Base = "weapon_tttbase"
 
 SWEP.ViewModel          = "models/weapons/v_crowbar.mdl"
-SWEP.WorldModel         = "models/weapons/w_camphone.mdl"
+SWEP.WorldModel         = "models/weapons/w_slam.mdl"
 
 SWEP.DrawCrosshair      = false
 SWEP.ViewModelFlip      = false

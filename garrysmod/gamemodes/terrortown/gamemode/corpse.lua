@@ -355,85 +355,80 @@ local rag_collide = CreateConVar("ttt_ragdoll_collide", "0")
 
 -- Creates client or server ragdoll depending on settings
 function CORPSE.Create(ply, attacker, dmginfo)
-   if not GetConVar("ttt_server_ragdolls"):GetBool() then
-      ply:CreateRagdoll()
-      return nil -- signifies we should spectate GetRagdollEntity
-   else
-      if not IsValid(ply) then return end
+   if not IsValid(ply) then return end
 
-      local rag = ents.Create("prop_ragdoll")
-      if not IsValid(rag) then return nil end
+   local rag = ents.Create("prop_ragdoll")
+   if not IsValid(rag) then return nil end
 
-      rag:SetPos(ply:GetPos())
-      rag:SetModel(ply:GetModel())
-      rag:SetAngles(ply:GetAngles())
+   rag:SetPos(ply:GetPos())
+   rag:SetModel(ply:GetModel())
+   rag:SetAngles(ply:GetAngles())
 
-      rag:Spawn()
-      rag:Activate()
+   rag:Spawn()
+   rag:Activate()
 
-      -- nonsolid to players, but can be picked up and shot
-      rag:SetCollisionGroup(rag_collide:GetBool() and COLLISION_GROUP_WEAPON or COLLISION_GROUP_DEBRIS_TRIGGER)
+   -- nonsolid to players, but can be picked up and shot
+   rag:SetCollisionGroup(rag_collide:GetBool() and COLLISION_GROUP_WEAPON or COLLISION_GROUP_DEBRIS_TRIGGER)
 
-      -- flag this ragdoll as being a player's
-      rag.player_ragdoll = true
-      rag.uqid = ply:UniqueID()
+   -- flag this ragdoll as being a player's
+   rag.player_ragdoll = true
+   rag.uqid = ply:UniqueID()
 
-      -- network data
-      CORPSE.SetPlayerNick(rag, ply)
-      CORPSE.SetFound(rag, false)
-      CORPSE.SetCredits(rag, ply:GetCredits())
+   -- network data
+   CORPSE.SetPlayerNick(rag, ply)
+   CORPSE.SetFound(rag, false)
+   CORPSE.SetCredits(rag, ply:GetCredits())
 
-      -- if someone searches this body they can find info on the victim and the
-      -- death circumstances
-      rag.equipment = ply:GetEquipmentItems()
-      rag.was_role = ply:GetRole()
-      rag.bomb_wire = ply.bomb_wire
-      rag.dmgtype = dmginfo:GetDamageType()
+   -- if someone searches this body they can find info on the victim and the
+   -- death circumstances
+   rag.equipment = ply:GetEquipmentItems()
+   rag.was_role = ply:GetRole()
+   rag.bomb_wire = ply.bomb_wire
+   rag.dmgtype = dmginfo:GetDamageType()
 
-      local wep = util.WeaponFromDamage(dmginfo)
-      rag.dmgwep = IsValid(wep) and wep:GetClass() or ""
+   local wep = util.WeaponFromDamage(dmginfo)
+   rag.dmgwep = IsValid(wep) and wep:GetClass() or ""
 
-      rag.was_headshot = (ply.was_headshot and dmginfo:IsBulletDamage())
-      rag.time = CurTime()
-      rag.kills = table.Copy(ply.kills)
+   rag.was_headshot = (ply.was_headshot and dmginfo:IsBulletDamage())
+   rag.time = CurTime()
+   rag.kills = table.Copy(ply.kills)
 
-      rag.killer_sample = GetKillerSample(ply, attacker, dmginfo)
+   rag.killer_sample = GetKillerSample(ply, attacker, dmginfo)
 
-      -- crime scene data
-      rag.scene = GetSceneData(ply, attacker, dmginfo)
+   -- crime scene data
+   rag.scene = GetSceneData(ply, attacker, dmginfo)
 
 
-      -- position the bones
-      local num = rag:GetPhysicsObjectCount()-1
-      local v = ply:GetVelocity()
+   -- position the bones
+   local num = rag:GetPhysicsObjectCount()-1
+   local v = ply:GetVelocity()
 
-      -- bullets have a lot of force, which feels better when shooting props,
-      -- but makes bodies fly, so dampen that here
-      if dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_SLASH) then
-         v = v / 5
-      end
-
-      for i=0, num do
-         local bone = rag:GetPhysicsObjectNum(i)
-         if IsValid(bone) then
-            local bp, ba = ply:GetBonePosition(rag:TranslatePhysBoneToBone(i))
-            if bp and ba then
-               bone:SetPos(bp)
-               bone:SetAngles(ba)
-            end
-
-            -- not sure if this will work:
-            bone:SetVelocity(v)
-         end
-      end
-
-      -- create advanced death effects (knives)
-      if ply.effect_fn then
-         -- next frame, after physics is happy for this ragdoll
-         local efn = ply.effect_fn
-         timer.Simple(0, function() efn(rag) end)
-      end
-
-      return rag -- we'll be speccing this
+   -- bullets have a lot of force, which feels better when shooting props,
+   -- but makes bodies fly, so dampen that here
+   if dmginfo:IsDamageType(DMG_BULLET) or dmginfo:IsDamageType(DMG_SLASH) then
+      v = v / 5
    end
+
+   for i=0, num do
+      local bone = rag:GetPhysicsObjectNum(i)
+      if IsValid(bone) then
+         local bp, ba = ply:GetBonePosition(rag:TranslatePhysBoneToBone(i))
+         if bp and ba then
+            bone:SetPos(bp)
+            bone:SetAngles(ba)
+         end
+
+         -- not sure if this will work:
+         bone:SetVelocity(v)
+      end
+   end
+
+   -- create advanced death effects (knives)
+   if ply.effect_fn then
+      -- next frame, after physics is happy for this ragdoll
+      local efn = ply.effect_fn
+      timer.Simple(0, function() efn(rag) end)
+   end
+
+   return rag -- we'll be speccing this
 end

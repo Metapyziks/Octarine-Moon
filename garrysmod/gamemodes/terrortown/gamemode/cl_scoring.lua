@@ -49,7 +49,7 @@ end
 function CLSCORE:TimeForEvent(e)
    local t = e.t - self.StartTime
    if t >= 0 then
-      return string.FormattedTime(t, "%02i:%02i")
+      return util.FormatTime(t, "%02i:%02i")
    else
       return "     "
    end
@@ -306,7 +306,7 @@ function CLSCORE:BuildHilitePanel(dpanel)
    partlbl:SetPos(xwin, ysubwin + 8)
 
    local timelbl = vgui.Create("DLabel", dpanel)
-   timelbl:SetText(PT("hilite_duration", {time= string.FormattedTime(roundtime, "%02i:%02i")}))
+   timelbl:SetText(PT("hilite_duration", {time= util.FormatTime(roundtime, "%02i:%02i")}))
    timelbl:SizeToContents()
    timelbl:SetPos(xwin + winlbl:GetWide() - timelbl:GetWide(), ysubwin + 8)
 
@@ -531,7 +531,6 @@ local function ReceiveReportStream(len)
    local cont = net.ReadBit() == 1
 
    buff = buff .. net.ReadString()
-   print("Receiving report buffer:", len, #buff, cont)
 
    if cont then
       return

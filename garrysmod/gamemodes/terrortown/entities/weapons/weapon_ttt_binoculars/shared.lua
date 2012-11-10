@@ -212,7 +212,7 @@ if CLIENT then
 
       if corpse then
          surface.SetTextPos( x + length, y - length + 15)
-         surface.DrawText("BODY DETECTED")   
+         surface.DrawText("BODY DETECTED")
       end
 
       if self.dt.processing then
@@ -223,7 +223,7 @@ if CLIENT then
          surface.SetDrawColor(0, 255, 0, 255)
          surface.DrawOutlinedRect(x - w/2, y - h, w, h)
 
-         surface.SetDrawColor(0, 255, 0, 180)      
+         surface.SetDrawColor(0, 255, 0, 180)
          local pct = math.Clamp((CurTime() - self.dt.start_time) / self.ProcessingDelay, 0, 1)
          surface.DrawRect(x - w/2, y - h, w * pct, h)
       end
@@ -237,7 +237,10 @@ if CLIENT then
    end
 
    function SWEP:AdjustMouseSensitivity()
-      return 1 / self.dt.zoom
+      if self.dt.zoom > 0 then
+         return 1 / self.dt.zoom
+      end
+      return -1
    end
 end
 

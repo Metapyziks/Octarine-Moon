@@ -381,15 +381,6 @@ local function OrderEquipment(ply, cmd, args)
          if not ply:HasEquipmentItem(id) then
             ply:GiveEquipmentItem(id)
             received = true
-
-            if id == EQUIP_RADAR then
-               -- wait until the client knows we have a radar
-               timer.Simple(0.5, function()
-                                    if IsValid(ply) then
-                                       ply:ConCommand("ttt_radar_scan")
-                                    end
-                                 end)
-            end
          end
       end
    elseif swep_table then
@@ -420,6 +411,19 @@ local function OrderEquipment(ply, cmd, args)
       LANG.Msg(ply, "buy_received")
 
       ply:AddBought(id)
+
+      timer.Simple(0.5,
+                   function()
+                      if not IsValid(ply) then return end
+                      umsg.Start("bought_item", ply)
+                      umsg.Bool(is_item)
+                      if is_item then
+                         umsg.Short(id)
+                      else
+                         umsg.String(id)
+                      end
+                      umsg.End()
+                   end)
    end
 end
 concommand.Add("ttt_order_equipment", OrderEquipment)

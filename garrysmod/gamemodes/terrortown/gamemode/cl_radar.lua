@@ -61,6 +61,13 @@ function RADAR.CacheEnts()
    end
 end
 
+function RADAR.Bought(is_item, id)
+   if is_item and id == EQUIP_RADAR then
+      RunConsoleCommand("ttt_radar_scan")
+   end
+end
+hook.Add("TTTBoughtItem", "RadarBoughtItem", RADAR.Bought)
+
 local function DrawTarget(tgt, size, offset, no_shrink)
    local scrpos = tgt.pos:ToScreen() -- sweet
    local sz = (IsOffScreen(scrpos) and (not no_shrink)) and size/2 or size
@@ -81,7 +88,7 @@ local function DrawTarget(tgt, size, offset, no_shrink)
 
       if tgt.t then
          -- Show time
-         text = string.FormattedTime(tgt.t - CurTime(), "%02i:%02i")
+         text = util.FormatTime(tgt.t - CurTime(), "%02i:%02i")
          w, h = surface.GetTextSize(text)
 
          surface.SetTextPos(scrpos.x - w / 2, scrpos.y + sz / 2)
@@ -103,7 +110,7 @@ local sample_scan = surface.GetTextureID("VGUI/ttt/sample_scan")
 local det_beacon  = surface.GetTextureID("VGUI/ttt/det_beacon")
 
 local GetPTranslation = LANG.GetParamTranslation
-local FormatTime = string.FormattedTime
+local FormatTime = util.FormatTime
 
 local near_cursor_dist = 180
 

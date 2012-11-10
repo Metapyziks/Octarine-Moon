@@ -463,6 +463,7 @@ local function CreateImportedEnt(cls, pos, ang, kv)
    if not cls or not pos or not ang or not kv then return false end
 
    local ent = ents.Create(cls)
+   if not IsValid(ent) then return false end
    ent:SetPos(pos)
    ent:SetAngles(ang)
 

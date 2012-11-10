@@ -194,7 +194,7 @@ local function SpecHUDPaint(client)
    ShadowedText(text, "TraitorState", x + margin, round_y, COLOR_WHITE)
 
    -- Draw round/prep/post time remaining
-   local text = string.FormattedTime(math.max(0, GetGlobalFloat("ttt_round_end", 0) - CurTime()), "%02i:%02i")
+   local text = util.FormatTime(math.max(0, GetGlobalFloat("ttt_round_end", 0) - CurTime()), "%02i:%02i")
    ShadowedText(text, "TimeLeft", time_x + margin, time_y, COLOR_WHITE)
 
    local tgt = client:GetObserverTarget()
@@ -289,7 +289,7 @@ local function InfoPaint(client)
             rx = rx - 3
          else
             -- traitor and not blinking "overtime" right now, so standard endtime display
-            text  = string.FormattedTime(math.max(0, endtime), "%02i:%02i")
+            text  = util.FormatTime(math.max(0, endtime), "%02i:%02i")
             color = COLOR_RED
          end
       else
@@ -299,11 +299,11 @@ local function InfoPaint(client)
             t = endtime
             color = COLOR_RED
          end
-         text = string.FormattedTime(math.max(0, t), "%02i:%02i")
+         text = util.FormatTime(math.max(0, t), "%02i:%02i")
       end
    else
       -- bog standard time when haste mode is off (or round not active)
-      text = string.FormattedTime(math.max(0, endtime), "%02i:%02i")
+      text = util.FormatTime(math.max(0, endtime), "%02i:%02i")
    end
 
    ShadowedText(text, font, rx, ry, color)

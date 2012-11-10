@@ -109,7 +109,7 @@ function ENT:ShowSceneForCorpse(corpse)
          e:SetScale(dummy.cycle)
          e:SetStart(Vector(dummy.aim_yaw, dummy.aim_pitch, dummy.move_yaw))
          e:SetRadius(dur)
-         PrintTable(dummy)
+
          util.Effect("crimescene_dummy", e)
       end
    end

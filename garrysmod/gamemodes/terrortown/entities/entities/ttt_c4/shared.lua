@@ -568,7 +568,7 @@ if CLIENT then
                          antialias = false
                       })
 
-   local strtime = string.FormattedTime
+   local strtime = util.FormatTime
    local max = math.max
    function ENT:Draw()
       self:DrawModel()

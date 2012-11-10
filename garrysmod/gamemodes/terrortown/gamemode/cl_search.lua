@@ -166,7 +166,7 @@ function PreprocSearch(raw)
          search[t].p = 15
       elseif t == "dtime" then
          if d != 0 then
-            local ftime = string.FormattedTime(d, "%02i:%02i")
+            local ftime = util.FormatTime(d, "%02i:%02i")
             search[t].text = PT("search_time", {time = ftime})
 
             search[t].text_icon = ftime
@@ -175,7 +175,7 @@ function PreprocSearch(raw)
          end
       elseif t == "stime" then
          if d > 0 then
-            local ftime = string.FormattedTime(d, "%02i:%02i")
+            local ftime = util.FormatTime(d, "%02i:%02i")
             search[t].text = PT("search_dna", {time = ftime})
 
             search[t].text_icon = ftime
