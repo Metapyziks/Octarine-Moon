@@ -2,7 +2,9 @@ download/maps/
 garrysmod/cache/
 garrysmod/maps/*.bsp
 garrysmod/maps/*.ain
-garrysmod/addons/evolve/.svn/
+garrysmod/addons/ulib/.svn
+garrysmod/addons/ulx/.svn
+garrysmod/gamemodes/terrortown/.svn
 syncsrc/OMMapSync/bin/
 syncsrc/OMMapSync/obj/
 syncsrc/OMCacheSync/bin/
@@ -12,4 +14,3 @@ syncsrc/OMCacheSync/Thumbs.db
 syncsrc/OMCacheSync.suo
 serverinfo.txt
 removehist.bat
-garrysmod/gamemodes/terrortown/.svn
